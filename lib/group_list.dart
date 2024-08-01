@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:paymate/header.dart';
 
 class GroupList extends StatefulWidget {
   const GroupList({super.key});
@@ -10,19 +11,9 @@ class GroupList extends StatefulWidget {
 class GroupListState extends State<GroupList> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          children: [
-            ElevatedButton(
-              child: const Icon(Icons.arrow_back_ios_new_rounded),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            )
-          ],
-        ),
+    return const Scaffold(
+      appBar: Header(
+        headerTitle: '모임 목록',
       ),
     );
   }
