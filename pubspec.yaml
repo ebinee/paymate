@@ -61,6 +61,12 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/paymate_logo.png
+    - assets/images/blue.jpg
+    - assets/images/iceBear.jpg
+    - assets/images/jin.jpg
+    - assets/images/pinkBear.jpg
+    - assets/images/sky.jpg
+    - assets/images/soom.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
