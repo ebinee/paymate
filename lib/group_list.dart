@@ -15,7 +15,13 @@ class GroupListState extends State<GroupList> {
     {
       'name': '엽떡팟',
       'date': '07/22',
-      'friends': '김두콩, 이뚜현, 네넨이, 인지 23 이강훈',
+      'user': {
+        '김두콩',
+        '이뚜현',
+        '네넨이',
+        '인지 23',
+        '이강훈',
+      },
       'color': const Color(0xFFFFB2A5).withOpacity(0.2),
       'image': 'assets/images/iceBear.jpg',
       'page': const App(),
@@ -23,7 +29,12 @@ class GroupListState extends State<GroupList> {
     {
       'name': '갓생스터디',
       'date': '07/22',
-      'friends': '김두콩, 이뚜현, 네넨이, 이숨',
+      'user': {
+        '김두콩',
+        '이뚜현',
+        '네넨이',
+        '이숨',
+      },
       'color': const Color(0xFFFFB2A5).withOpacity(0.2),
       'image': 'assets/images/pinkBear.jpg',
       'page': const App(),
@@ -31,7 +42,11 @@ class GroupListState extends State<GroupList> {
     {
       'name': '계절총회',
       'date': '06/25',
-      'friends': '컴공 23 박우진, 인지 23 이강훈, 인지 23 신은준',
+      'user': {
+        '컴공 23 박우진',
+        '인지 23 이강훈',
+        '인지 23 신은준',
+      },
       'color': const Color(0xFFB0B0B0),
       'image': 'assets/images/iceBear.jpg',
       'page': const App(),
@@ -39,7 +54,11 @@ class GroupListState extends State<GroupList> {
     {
       'name': '군바',
       'date': '06/22',
-      'friends': '컴공 23 하성준, 이뚜현, 최지뇽',
+      'user': {
+        '컴공 23 하성준',
+        '이뚜현',
+        '최지뇽',
+      },
       'color': const Color(0xFFB0B0B0),
       'image': 'assets/images/pinkBear.jpg',
       'page': const App(),
@@ -47,7 +66,13 @@ class GroupListState extends State<GroupList> {
     {
       'name': '종강총회',
       'date': '06/21',
-      'friends': '강지현, 강민서, 김효정, 박우진, 신은준',
+      'user': {
+        '강지현',
+        '강민서',
+        '김효정',
+        '박우진',
+        '신은준',
+      },
       'color': const Color(0xFFB0B0B0),
       'image': 'assets/images/pinkBear.jpg',
       'page': const App(),
@@ -55,7 +80,12 @@ class GroupListState extends State<GroupList> {
     {
       'name': '밥약',
       'date': '06/10',
-      'friends': '컴공 23 하성준, 이숨, 박건형, 이서준',
+      'user': {
+        '컴공 23 하성준',
+        '이숨',
+        '박건형',
+        '이서준',
+      },
       'color': const Color(0xFFB0B0B0),
       'image': 'assets/images/pinkBear.jpg',
       'page': const App(),
@@ -132,12 +162,10 @@ class GroupListState extends State<GroupList> {
                   child: GroupCard(
                     groupName: groups[index]['name'],
                     date: groups[index]['date'],
-                    friends: groups[index]['friends'],
+                    //friends: (groups[index]['user'] as Set<String>).join(', '),
+                    friends: groups[index]['user'],
                     backgroundColor: groups[index]['color'],
                     imagePath: groups[index]['image'],
-                    // imagePath2: groups[index]['image2'],
-                    //imagePath3: groups[index]['image3'],
-                    //imagePath4: groups[index]['image4'],
                   ),
                 );
               },
