@@ -17,25 +17,16 @@ class DayExpense extends StatefulWidget {
 
 class _DayExpenseState extends State<DayExpense> {
   late DateTime _selectedDay;
-  String? _selectedCategory;
 
   @override
   void initState() {
     super.initState();
     _selectedDay = widget.selectedDay;
-    _selectedCategory = null;
   }
 
   void _onDaySelected(DateTime selectedDay) {
     setState(() {
       _selectedDay = selectedDay;
-      _selectedCategory = null;
-    });
-  }
-
-  void _onCategorySelected(String? category) {
-    setState(() {
-      _selectedCategory = category;
     });
   }
 
@@ -127,11 +118,6 @@ class _DayExpenseState extends State<DayExpense> {
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
-                  ),
-                  DropButton(
-                    categoryItem: dayexp.map((e) => e['category']).toList(),
-                    selectedCategory: _onCategorySelected,
-                    selectedValue: _selectedCategory,
                   ),
                 ],
               ),
@@ -290,75 +276,6 @@ class _WeekCalendarState extends State<WeekCalendar> {
         weekendTextStyle: TextStyle(
           fontSize: 13,
           color: Color(0xFF646464),
-        ),
-      ),
-    );
-  }
-}
-
-class DropButton extends StatefulWidget {
-  final List categoryItem;
-  final ValueChanged<String?> selectedCategory;
-  final String? selectedValue;
-
-  const DropButton({
-    super.key,
-    required this.categoryItem,
-    required this.selectedCategory,
-    required this.selectedValue,
-  });
-
-  @override
-  State<DropButton> createState() => _DropButtonState();
-}
-
-class _DropButtonState extends State<DropButton> {
-  String? _selectedCategory;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedCategory = widget.selectedValue;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 110,
-      height: 35,
-      decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF646464)),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 5,
-          ),
-          child: DropdownButton(
-            hint: const Text('카테고리'),
-            value: _selectedCategory,
-            items: ['전체', ...widget.categoryItem]
-                .map((category) => DropdownMenuItem<String>(
-                      value: category == '전체' ? null : category,
-                      child: Text(category),
-                    ))
-                .toList(),
-            onChanged: (value) {
-              setState(() {
-                _selectedCategory = value;
-              });
-              widget.selectedCategory(value);
-            },
-            icon: const Icon(Icons.keyboard_arrow_down_rounded),
-            iconSize: 25,
-            underline: Container(),
-            style: const TextStyle(
-              color: Color(0xFF646464),
-              fontSize: 15,
-              fontWeight: FontWeight.w200,
-            ),
-          ),
         ),
       ),
     );
