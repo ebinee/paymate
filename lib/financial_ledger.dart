@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:paymate/header.dart';
 
 class FinancialLedger extends StatefulWidget {
   const FinancialLedger({super.key});
@@ -10,19 +11,9 @@ class FinancialLedger extends StatefulWidget {
 class FinancialLedgerState extends State<FinancialLedger> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          children: [
-            ElevatedButton(
-              child: const Icon(Icons.arrow_back_ios_new_rounded),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            )
-          ],
-        ),
+    return const Scaffold(
+      appBar: Header(
+        headerTitle: 'MY 가계부',
       ),
     );
   }
