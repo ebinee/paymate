@@ -147,7 +147,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-
   flutter_web_plugins:
     dependency: transitive
     description: flutter
@@ -286,6 +285,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.0"
+  table_calendar:
+    dependency: "direct main"
+    description:
+      name: table_calendar
+      sha256: "4ca32b2fc919452c9974abd4c6ea611a63e33b9e4f0b8c38dba3ac1f4a6549d1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.2"
   term_glyph:
     dependency: transitive
     description:

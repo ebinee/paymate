@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:paymate/main.dart';
 import 'package:paymate/add_schedule.dart';
 import 'package:paymate/header.dart';
-//import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class GroupList extends StatefulWidget {
   const GroupList({super.key});
@@ -12,8 +13,8 @@ class GroupList extends StatefulWidget {
 }
 
 class GroupListState extends State<GroupList> {
-  final List<Map<String, dynamic>> groups = [
-    {
+  List<Map<String, dynamic>> groups = [
+    /*{
       'name': '엽떡팟',
       'date': '07/22',
       'user': '김두콩, 이뚜현, 네넨이, 인지 23 이강훈',
@@ -61,8 +62,41 @@ class GroupListState extends State<GroupList> {
       'image': 'assets/images/pinkBear.jpg',
       'page': const App(),
     },
+    */
     // 여기에 그룹 데이터를 추가하세요...
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchGroups();
+  }
+
+  Future<void> fetchGroups() async {
+    try {
+      // Firestore의 'group' 컬렉션 참조
+      CollectionReference groupCollection =
+          FirebaseFirestore.instance.collection('group');
+
+      // 데이터 가져오기
+      QuerySnapshot snapshot = await groupCollection.get();
+
+      // 데이터를 List<Map<String, dynamic>>로 변환
+      List<Map<String, dynamic>> fetchedGroups = snapshot.docs.map((doc) {
+        return {
+          'id': doc.id,
+          'data': doc.data(),
+        };
+      }).toList();
+
+      // 상태 업데이트
+      setState(() {
+        groups = fetchedGroups;
+      });
+    } catch (e) {
+      print("그룹 데이터를 가져오는 중 오류 발생: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,20 +140,25 @@ class GroupListState extends State<GroupList> {
                 itemBuilder: (context, index) {
                   return GestureDetector(
                     onTap: () {
-                      Navigator.push(
+                      /*Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (context) =>
                                 groups[index]['page']), // 채팅창(?) 같은 곳으로 이동
-                      );
+                      );*/
                     },
                     child: GroupCard(
-                      groupName: groups[index]['name'],
-                      date: groups[index]['date'],
-                      //friends: (groups[index]['user'] as Set<String>).join(', '),
-                      friends: groups[index]['user'],
-                      backgroundColor: groups[index]['color'],
-                      imagePath: groups[index]['image'],
+                      groupName: groups[index]['data']['name'] ?? 'Unknown',
+                      date: groups[index]['data']['date'] is Timestamp
+                          ? groups[index]['data']['date'] as Timestamp
+                          : Timestamp.now(),
+                      friends: (groups[index]['data']['user'] != null)
+                          ? (groups[index]['data']['user'] as List<dynamic>)
+                              .join(', ')
+                          : 'No Users',
+                      //friends: groups[index]['user'],
+                      //backgroundColor: groups[index]['color'],
+                      //imagePath: groups[index]['image'],
                     ),
                   );
                 },
@@ -132,10 +171,10 @@ class GroupListState extends State<GroupList> {
 
 class GroupCard extends StatelessWidget {
   final String groupName;
-  final String date;
+  final Timestamp date;
   final String friends;
   final Color? backgroundColor;
-  final String imagePath;
+  //final String imagePath;
 
   const GroupCard({
     super.key,
@@ -143,11 +182,12 @@ class GroupCard extends StatelessWidget {
     required this.date,
     required this.friends,
     this.backgroundColor,
-    required this.imagePath,
+    //required this.imagePath,
   });
 
   @override
   Widget build(BuildContext context) {
+    String formattedDate = DateFormat('MM/dd').format(date.toDate());
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -159,7 +199,7 @@ class GroupCard extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 8),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: backgroundColor ?? Colors.white,
+          color: backgroundColor ?? const Color(0x00ffb2a5).withOpacity(0.2),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
@@ -171,8 +211,8 @@ class GroupCard extends StatelessWidget {
           ],
         ),
         child: ListTile(
-          leading: CircleAvatar(
-            backgroundImage: AssetImage(imagePath),
+          leading: const CircleAvatar(
+            backgroundImage: AssetImage('assets/images/iceBear.jpg'),
           ),
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,6 +226,7 @@ class GroupCard extends StatelessWidget {
               const SizedBox(height: 8.0),
               Text(
                 friends,
+                //"User",
                 style: const TextStyle(
                   fontSize: 12,
                   color: Color(0xFF646464),
@@ -195,7 +236,7 @@ class GroupCard extends StatelessWidget {
               ),
             ],
           ),
-          trailing: Text(date),
+          trailing: Text(formattedDate),
         ),
       ),
     );
