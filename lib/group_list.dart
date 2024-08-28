@@ -63,7 +63,6 @@ class GroupListState extends State<GroupList> {
       'page': const App(),
     },
     */
-    // 여기에 그룹 데이터를 추가하세요...
   ];
 
   @override
@@ -252,18 +251,51 @@ class AddGroupList extends StatefulWidget {
 }
 
 class _AddGroupList extends State<AddGroupList> {
-  final List<Map<String, String>> friends = [
-    {'name': '김예빈', 'id': 'MYBIN'},
+  List<Map<String, dynamic>> friends = [
+    /*{'name': '김예빈', 'id': 'MYBIN'},
     {'name': '한현비', 'id': 'NENEN2YA'},
     {'name': '이수민', 'id': 'SOOOMBB'},
     {'name': '박우진', 'id': 'WOOOOOJIN'},
     {'name': '이강훈', 'id': 'KANGHOOOON'},
     {'name': '엄마', 'id': 'MAMMI'},
+    */
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchFriends();
+  }
+
+  Future<void> fetchFriends() async {
+    try {
+      // Firestore의 'group' 컬렉션 참조
+      CollectionReference friendsCollection =
+          FirebaseFirestore.instance.collection('user');
+
+      // 데이터 가져오기
+      QuerySnapshot snapshot = await friendsCollection.get();
+
+      // 데이터를 List<Map<String, dynamic>>로 변환
+      List<Map<String, dynamic>> fetchFriends = snapshot.docs.map((doc) {
+        return {
+          'id': doc['id'],
+          'name': doc['name'],
+        };
+      }).toList();
+
+      // 상태 업데이트
+      setState(() {
+        friends = fetchFriends;
+      });
+    } catch (e) {
+      print("그룹 데이터를 가져오는 중 오류 발생: $e");
+    }
+  }
 
   String meetingName = ''; // 모임 이름
   Set<int> selectedFriends = {}; // 선택된 친구
-  List<Map<String, String>> selectedProfiles = []; // 선택된 친구 리스트
+  List<Map<String, dynamic>> selectedProfiles = []; // 선택된 친구 리스트
 
   void _toggleFriendSelection(int index) {
     setState(() {
@@ -453,7 +485,7 @@ class _AddGroupList extends State<AddGroupList> {
 
 class GroupChat extends StatelessWidget {
   final String meetingName; // 모임 이름
-  final List<Map<String, String>> selectedProfiles; // 선택된 프로필
+  final List<Map<String, dynamic>> selectedProfiles; // 선택된 프로필
 
   const GroupChat({
     super.key,
