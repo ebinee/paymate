@@ -297,6 +297,10 @@ class _AddGroupList extends State<AddGroupList> {
   Set<int> selectedFriends = {}; // 선택된 친구
   List<Map<String, dynamic>> selectedProfiles = []; // 선택된 친구 리스트
 
+  bool _isCreateButtonEnabled() {
+    return meetingName.isNotEmpty && selectedFriends.isNotEmpty;
+  }
+
   void _toggleFriendSelection(int index) {
     setState(() {
       if (selectedFriends.contains(index)) {
@@ -450,17 +454,19 @@ class _AddGroupList extends State<AddGroupList> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => GroupChat(
-                      meetingName: meetingName,
-                      selectedProfiles: selectedProfiles,
-                    ),
-                  ),
-                );
-              },
+              onPressed: _isCreateButtonEnabled()
+                  ? () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => GroupChat(
+                            meetingName: meetingName,
+                            selectedProfiles: selectedProfiles,
+                          ),
+                        ),
+                      );
+                    }
+                  : null,
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 backgroundColor: const Color(0xFF646464),
