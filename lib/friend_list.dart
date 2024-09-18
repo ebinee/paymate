@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FriendList extends StatefulWidget {
   const FriendList({super.key});
@@ -11,18 +12,37 @@ class FriendList extends StatefulWidget {
 class FriendListState extends State<FriendList> {
   final TextEditingController _idController = TextEditingController();
 
-  final Map<String, String> _idToNameMap = {
-    'mybin': '김예빈',
-    'nenen2ya': '한현비',
-    'sooombb': '이수민',
-    'woooojin': '박우진',
-    'kanghoon': '이강훈',
-    'mammi': '엄마',
-    'daddy': '아빠',
-    'bro': '오빠',
-  };
+  Map<String, String> _idToNameMap = {};
 
   final List<Widget> _containers = [];
+
+  Future<void> _fetchData() async {
+    try {
+      final FirebaseFirestore firestore = FirebaseFirestore.instance;
+      // Firestore 컬렉션에서 데이터를 읽어옵니다.
+      QuerySnapshot snapshot = await firestore.collection('user').get();
+
+      // 데이터를 Map으로 변환합니다.
+      Map<String, String> idToNameMap = {};
+      for (QueryDocumentSnapshot doc in snapshot.docs) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        String id = doc.id;
+        String name =
+            data['name'] ?? 'Unknown'; // 필드 이름은 Firestore에서의 필드 이름과 일치해야 합니다.
+        idToNameMap[id] = name;
+        setState(() {
+          _addContainer(name, id);
+        });
+      }
+
+      // 상태를 업데이트하여 UI를 새로 고칩니다.
+      setState(() {
+        _idToNameMap = idToNameMap;
+      });
+    } catch (e) {
+      print('Error fetching data: $e');
+    }
+  }
 
   @override
   void dispose() {
@@ -52,7 +72,7 @@ class FriendListState extends State<FriendList> {
             ),
           ),
           content: Text(
-            '$name 을(를) 삭제하시겠습니까?',
+            '$name 을 (를) 삭제하시겠습니까?',
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: Color(0xff646464),
