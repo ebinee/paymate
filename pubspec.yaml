@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.6
   fl_chart: ^0.68.0
   percent_indicator: ^4.2.3
+  cloud_firestore: ^5.4.2
 
 dev_dependencies:
   flutter_test:
