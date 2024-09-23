@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -18,6 +20,9 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+=======
+import 'package:cloud_firestore/cloud_firestore.dart';
+>>>>>>> 8d1961a2f3848ab06eeda10299efc0366312545d
 
 class FriendList extends StatefulWidget {
   const FriendList({super.key});
@@ -28,6 +33,7 @@ class FriendList extends StatefulWidget {
 
 class FriendListState extends State<FriendList> {
   final TextEditingController _idController = TextEditingController();
+<<<<<<< HEAD
   Map<String, String> _idToNameMap = {};
   List<Map<String, String>> _friends = [];
 
@@ -36,10 +42,17 @@ class FriendListState extends State<FriendList> {
     super.initState();
     _fetchData();
   }
+=======
+
+  Map<String, String> _idToNameMap = {};
+
+  final List<Widget> _containers = [];
+>>>>>>> 8d1961a2f3848ab06eeda10299efc0366312545d
 
   Future<void> _fetchData() async {
     try {
       final FirebaseFirestore firestore = FirebaseFirestore.instance;
+<<<<<<< HEAD
       QuerySnapshot snapshot = await firestore.collection('myuser').get();
 
       Map<String, String> idToNameMap = {};
@@ -56,6 +69,27 @@ class FriendListState extends State<FriendList> {
       setState(() {
         _idToNameMap = idToNameMap;
         _friends = friends;
+=======
+      // Firestore 컬렉션에서 데이터를 읽어옵니다.
+      QuerySnapshot snapshot = await firestore.collection('user').get();
+
+      // 데이터를 Map으로 변환합니다.
+      Map<String, String> idToNameMap = {};
+      for (QueryDocumentSnapshot doc in snapshot.docs) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        String id = doc.id;
+        String name =
+            data['name'] ?? 'Unknown'; // 필드 이름은 Firestore에서의 필드 이름과 일치해야 합니다.
+        idToNameMap[id] = name;
+        setState(() {
+          _addContainer(name, id);
+        });
+      }
+
+      // 상태를 업데이트하여 UI를 새로 고칩니다.
+      setState(() {
+        _idToNameMap = idToNameMap;
+>>>>>>> 8d1961a2f3848ab06eeda10299efc0366312545d
       });
     } catch (e) {
       print('Error fetching data: $e');
@@ -111,7 +145,11 @@ class FriendListState extends State<FriendList> {
               ),
               child: const Text('취소'),
               onPressed: () {
+<<<<<<< HEAD
                 Navigator.of(context).pop();
+=======
+                Navigator.of(context).pop(); // 대화상자 닫기
+>>>>>>> 8d1961a2f3848ab06eeda10299efc0366312545d
               },
             ),
             TextButton(
@@ -127,8 +165,13 @@ class FriendListState extends State<FriendList> {
               ),
               child: const Text('삭제'),
               onPressed: () {
+<<<<<<< HEAD
                 Navigator.of(context).pop();
                 _deleteFriend(name, id);
+=======
+                Navigator.of(context).pop(); // 대화상자 닫기
+                _deleteContainer(name, id);
+>>>>>>> 8d1961a2f3848ab06eeda10299efc0366312545d
               },
             ),
           ],
@@ -137,6 +180,7 @@ class FriendListState extends State<FriendList> {
     );
   }
 
+<<<<<<< HEAD
   void _deleteFriend(String name, String id) {
     setState(() {
       _friends.removeWhere(
@@ -173,6 +217,89 @@ class FriendListState extends State<FriendList> {
         SnackBar(content: Text('친구 추가 실패: $e')),
       );
     }
+=======
+  void _deleteContainer(String name, String id) {
+    setState(() {
+      _containers.removeWhere((container) {
+        if (container is Container) {
+          final child = container.child as Padding;
+          final row = child.child as Row;
+          final textWidgets = row.children.whereType<Text>().toList();
+          final textName = textWidgets[0].data;
+          final textId = textWidgets[1].data;
+          return textName == name && textId == id;
+        }
+        return false;
+      });
+    });
+  }
+
+  void _addContainer(String name, String id) {
+    setState(() {
+      _containers.add(
+        Container(
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 255, 222, 216),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12.withOpacity(0.2),
+                spreadRadius: 0,
+                blurRadius: 5,
+                offset: const Offset(0, 4),
+              ),
+            ],
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                const Icon(Icons.person_outline_outlined,
+                    size: 40, color: Color(0xFF646464)),
+                const SizedBox(
+                  width: 15,
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text(
+                    name,
+                    style: const TextStyle(
+                      color: Color(0xFF646464),
+                      fontSize: 23,
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  width: 20,
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: Text(
+                    id,
+                    style: const TextStyle(
+                      color: Color(0xFF646464),
+                      fontSize: 18,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () {
+                      _showDeleteConfirmationDialog(name, id);
+                    }),
+                const SizedBox(
+                  width: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      _containers.add(const SizedBox(height: 15));
+    });
+>>>>>>> 8d1961a2f3848ab06eeda10299efc0366312545d
   }
 
   @override
@@ -295,11 +422,30 @@ class FriendListState extends State<FriendList> {
                           ),
                           child: const Text('추가',
                               textAlign: TextAlign.center,
+<<<<<<< HEAD
                               style: TextStyle(fontSize: 15)),
                           onPressed: () {
                             String enteredId = _idController.text;
                             Navigator.of(context).pop();
                             _addFriend(enteredId);
+=======
+                              style: TextStyle(
+                                fontSize: 15,
+                              )),
+                          onPressed: () {
+                            String enteredId = _idController.text;
+                            Navigator.of(context).pop();
+
+                            String? name = _idToNameMap[enteredId];
+
+                            if (name != null) {
+                              _addContainer(name, enteredId);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text('해당 아이디에 맞는 이름이 없습니다.')));
+                            }
+>>>>>>> 8d1961a2f3848ab06eeda10299efc0366312545d
                           },
                         ),
                       ],
@@ -330,6 +476,7 @@ class FriendListState extends State<FriendList> {
             ),
             const SizedBox(height: 20.0),
             Expanded(
+<<<<<<< HEAD
               child: ListView.builder(
                 itemCount: _friends.length,
                 itemBuilder: (context, index) {
@@ -394,6 +541,10 @@ class FriendListState extends State<FriendList> {
                     const SizedBox(height: 15),
                   ]);
                 },
+=======
+              child: ListView(
+                children: _containers,
+>>>>>>> 8d1961a2f3848ab06eeda10299efc0366312545d
               ),
             ),
           ],
