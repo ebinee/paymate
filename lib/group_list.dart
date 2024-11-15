@@ -13,57 +13,7 @@ class GroupList extends StatefulWidget {
 }
 
 class GroupListState extends State<GroupList> {
-  List<Map<String, dynamic>> groups = [
-    /*{
-      'name': '엽떡팟',
-      'date': '07/22',
-      'user': '김두콩, 이뚜현, 네넨이, 인지 23 이강훈',
-      'color': const Color(0xFFFFB2A5).withOpacity(0.2),
-      'image': 'assets/images/iceBear.jpg',
-      'page': const AddSchedule(),
-    },
-    {
-      'name': '갓생스터디',
-      'date': '07/22',
-      'user': '김두콩, 이뚜현, 네넨이, 이숨',
-      'color': const Color(0xFFFFB2A5).withOpacity(0.2),
-      'image': 'assets/images/pinkBear.jpg',
-      'page': const App(),
-    },
-    {
-      'name': '계절총회',
-      'date': '06/25',
-      'user': '컴공 23 박우진, 인지 23 신은준, 인지 23 이강훈',
-      'color': const Color(0xFFB0B0B0),
-      'image': 'assets/images/iceBear.jpg',
-      'page': const App(),
-    },
-    {
-      'name': '술팟',
-      'date': '06/22',
-      'user': '컴공 23 하성준, 이뚜현, 컴공 23 김병규',
-      'color': const Color(0xFFB0B0B0),
-      'image': 'assets/images/pinkBear.jpg',
-      'page': const App(),
-    },
-    {
-      'name': '종강총회',
-      'date': '06/21',
-      'user': '강지현, 강민서, 김효정, 두소원, 박현빈',
-      'color': const Color(0xFFB0B0B0),
-      'image': 'assets/images/pinkBear.jpg',
-      'page': const App(),
-    },
-    {
-      'name': '밥약',
-      'date': '06/10',
-      'user': '컴공 23 하성준, 이숨, 박건형, 이서준',
-      'color': const Color(0xFFB0B0B0),
-      'image': 'assets/images/pinkBear.jpg',
-      'page': const App(),
-    },
-    */
-  ];
+  List<Map<String, dynamic>> groups = [];
 
   @override
   void initState() {
@@ -73,22 +23,17 @@ class GroupListState extends State<GroupList> {
 
   Future<void> fetchGroups() async {
     try {
-      // Firestore의 'group' 컬렉션 참조
       CollectionReference groupCollection =
           FirebaseFirestore.instance.collection('group');
-
-      // 데이터 가져오기
       QuerySnapshot snapshot = await groupCollection.get();
 
-      // 데이터를 List<Map<String, dynamic>>로 변환
       List<Map<String, dynamic>> fetchedGroups = snapshot.docs.map((doc) {
         return {
-          'id': doc.id,
+          'id': doc.id, // 이게 문서의 고유ID를 가져오는 코드!! 현비언니 참고 >_<
           'data': doc.data(),
         };
       }).toList();
 
-      // 상태 업데이트
       setState(() {
         groups = fetchedGroups;
       });
@@ -147,17 +92,18 @@ class GroupListState extends State<GroupList> {
                       );*/
                     },
                     child: GroupCard(
-                      groupName: groups[index]['data']['name'] ?? 'Unknown',
+                      groupName:
+                          groups[index]['data']['meetingName'] ?? 'Unknown',
                       date: groups[index]['data']['date'] is Timestamp
                           ? groups[index]['data']['date'] as Timestamp
                           : Timestamp.now(),
                       friends: (groups[index]['data']['user'] != null)
                           ? (groups[index]['data']['user'] as List<dynamic>)
-                              .join(', ')
-                          : 'No Users',
-                      //friends: groups[index]['user'],
-                      //backgroundColor: groups[index]['color'],
-                      //imagePath: groups[index]['image'],
+                              .map<String>((user) =>
+                                  user['name'] ??
+                                  'Unknown') // 명시적으로 List<String>으로 변환
+                              .toList()
+                          : <String>[],
                     ),
                   );
                 },
@@ -171,9 +117,8 @@ class GroupListState extends State<GroupList> {
 class GroupCard extends StatelessWidget {
   final String groupName;
   final Timestamp date;
-  final String friends;
+  final List<String> friends;
   final Color? backgroundColor;
-  //final String imagePath;
 
   const GroupCard({
     super.key,
@@ -181,7 +126,6 @@ class GroupCard extends StatelessWidget {
     required this.date,
     required this.friends,
     this.backgroundColor,
-    //required this.imagePath,
   });
 
   @override
@@ -224,7 +168,7 @@ class GroupCard extends StatelessWidget {
               ),
               const SizedBox(height: 8.0),
               Text(
-                friends,
+                ' ${friends.join(', ')}',
                 //"User",
                 style: const TextStyle(
                   fontSize: 12,
@@ -455,16 +399,38 @@ class _AddGroupList extends State<AddGroupList> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _isCreateButtonEnabled()
-                  ? () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => GroupChat(
-                            meetingName: meetingName,
-                            selectedProfiles: selectedProfiles,
-                          ),
-                        ),
-                      );
+                  ? () async {
+                      try {
+                        // Firestore 인스턴스 가져오기
+                        final firestore = FirebaseFirestore.instance;
+
+                        // 'group' 컬렉션에 새 문서 생성 및 데이터 저장
+                        await firestore.collection('group').add({
+                          'meetingName': meetingName,
+                          'user': selectedProfiles,
+                          'date': FieldValue.serverTimestamp(), // 생성 시간 필드 추가
+                        });
+
+                        // 성공 시 화면 전환
+                        if (mounted) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => GroupChat(
+                                meetingName: meetingName,
+                                selectedProfiles: selectedProfiles,
+                              ),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        // 에러 핸들링 (예: 스낵바로 에러 메시지 표시)
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('모임 생성 실패: $e')),
+                          );
+                        }
+                      }
                     }
                   : null,
               style: ElevatedButton.styleFrom(
