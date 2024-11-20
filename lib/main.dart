@@ -3,6 +3,7 @@ import 'package:paymate/financial_ledger.dart';
 import 'package:paymate/friend_list.dart';
 import 'package:paymate/group_list.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:paymate/header.dart';
 
 class IndividualBar {
   final int x;
@@ -58,6 +59,36 @@ class App extends StatefulWidget {
 
   @override
   State<App> createState() => _Appstate();
+}
+
+class NewPage extends StatelessWidget {
+  final String id;
+  final String name;
+
+  const NewPage({super.key, required this.id, required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: const Header(
+        headerTitle: "내 정보",
+      ),
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Icon(Icons.person_pin, size: 300, color: Colors.pinkAccent),
+            const SizedBox(height: 10),
+            Text(name, style: const TextStyle(fontSize: 40)),
+            const SizedBox(height: 5),
+            Text('ID : $id', style: const TextStyle(fontSize: 18)),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class TrapezoidClipper extends CustomClipper<Path> {
@@ -120,11 +151,16 @@ class _Appstate extends State<App> {
                     height: 65,
                     fit: BoxFit.fill,
                   ),
-                  const Icon(
-                    Icons.person,
-                    color: Color(0xFF646464),
-                    size: 45,
-                  ),
+                  GestureDetector(
+                    onTap: () {
+                      _navigateToNewPage(context);
+                    },
+                    child: const Icon(
+                      Icons.person,
+                      color: Color(0xFF646464),
+                      size: 45,
+                    ),
+                  )
                 ],
               ),
               const SizedBox(
@@ -315,77 +351,18 @@ class _Appstate extends State<App> {
                   ],
                 ),
               ),
-              Expanded(
-                  child: Container(
-                      margin: const EdgeInsets.only(
-                          left: 20.0, right: 20.0, bottom: 20.0, top: 10.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16), // 둥글게 만들기
-                        border: Border.all(
-                          color: const Color(0xFFFFB2A5), // 테두리 색상
-                          width: 2, // 테두리 두께
-                        ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 30.0),
-                        child: BarChart(
-                          BarChartData(
-                            borderData: FlBorderData(
-                              show: false,
-                            ),
-                            gridData: FlGridData(show: false),
-                            titlesData: FlTitlesData(
-                              leftTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
-                              ),
-                              rightTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
-                              ),
-                              topTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
-                              ),
-                              bottomTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  getTitlesWidget: (value, meta) {
-                                    const days = [
-                                      'FEB',
-                                      'MAR',
-                                      'APRIL',
-                                      'MAY',
-                                      'JUN',
-                                      'JUL',
-                                    ];
-                                    return Text(
-                                      days[value.toInt()],
-                                      style: const TextStyle(fontSize: 12),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                            barGroups: barData.barData
-                                .map(
-                                  (data) => BarChartGroupData(
-                                    x: data.x,
-                                    barRods: [
-                                      BarChartRodData(
-                                        toY: data.y,
-                                        color: const Color(0xFFFFB2A5),
-                                        width: 35,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                                .toList(),
-                          ),
-                        ),
-                      ))),
             ]),
           ),
         ),
       ],
+    );
+  }
+
+  void _navigateToNewPage(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => const NewPage(id: "USER", name: "사용자")),
     );
   }
 }
