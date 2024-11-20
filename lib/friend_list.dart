@@ -349,8 +349,12 @@ class FriendListState extends State<FriendList> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 30),
+                        padding: const EdgeInsets.only(
+                          left: 20,
+                          right: 0,
+                          bottom: 10,
+                          top: 5,
+                        ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
@@ -358,7 +362,7 @@ class FriendListState extends State<FriendList> {
                                 size: 40, color: Color(0xFF646464)),
                             const SizedBox(width: 15),
                             Padding(
-                              padding: const EdgeInsets.only(bottom: 4),
+                              padding: const EdgeInsets.only(bottom: 5),
                               child: Text(
                                 friend['name']!,
                                 style: const TextStyle(
@@ -369,7 +373,7 @@ class FriendListState extends State<FriendList> {
                             ),
                             const SizedBox(width: 20),
                             Padding(
-                              padding: const EdgeInsets.only(bottom: 2),
+                              padding: const EdgeInsets.only(bottom: 5),
                               child: Text(
                                 friend['id']!,
                                 style: const TextStyle(
@@ -379,12 +383,16 @@ class FriendListState extends State<FriendList> {
                               ),
                             ),
                             const Spacer(),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {
-                                _showDeleteConfirmationDialog(
-                                    friend['name']!, friend['id']!);
-                              },
+                            Align(
+                              alignment: Alignment.centerRight, // 오른쪽 정렬
+                              child: IconButton(
+                                icon: const Icon(Icons.delete,
+                                    color: Colors.grey),
+                                onPressed: () {
+                                  _showDeleteConfirmationDialog(
+                                      friend['name']!, friend['id']!);
+                                },
+                              ),
                             ),
                             const SizedBox(width: 20),
                           ],
