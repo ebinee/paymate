@@ -1,26 +1,7 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:paymate/header.dart';
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: FriendList(),
-    );
-  }
-}
 
 class FriendList extends StatefulWidget {
   const FriendList({super.key});
@@ -31,7 +12,7 @@ class FriendList extends StatefulWidget {
 
 class FriendListState extends State<FriendList> {
   final TextEditingController _idController = TextEditingController();
-  List<Map<String, String>> _friends = [];
+  final List<Map<String, dynamic>> _friends = [];
 
   @override
   void initState() {
@@ -40,27 +21,20 @@ class FriendListState extends State<FriendList> {
   }
 
   Future<void> _fetchData() async {
-    try {
-      final FirebaseFirestore firestore = FirebaseFirestore.instance;
-      QuerySnapshot snapshot = await firestore.collection('myuser').get();
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    QuerySnapshot snapshot = await firestore.collection('myuser').get();
 
-      Map<String, String> idToNameMap = {};
-      List<Map<String, String>> friends = [];
+    final List<Map<String, dynamic>> friends = snapshot.docs.map((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      return {
+        'id': data['id'] ?? 'Unknown',
+        'name': data['name'] ?? 'Unknown',
+      };
+    }).toList();
 
-      for (QueryDocumentSnapshot doc in snapshot.docs) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        String id = data['id'] ?? 'Unknown';
-        String name = data['name'] ?? 'Unknown';
-        idToNameMap[id] = name;
-        friends.add({'name': name, 'id': id});
-      }
-
-      setState(() {
-        _friends = friends;
-      });
-    } catch (e) {
-      print('Error fetching data: $e');
-    }
+    setState(() {
+      _friends.addAll(friends);
+    });
   }
 
   @override
