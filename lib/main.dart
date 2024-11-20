@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:paymate/financial_ledger.dart';
 import 'package:paymate/friend_list.dart';
 import 'package:paymate/group_list.dart';
+import 'package:paymate/header.dart';
 
 void main() {
   runApp(const MaterialApp(
@@ -17,6 +18,36 @@ class App extends StatefulWidget {
 
   @override
   State<App> createState() => _Appstate();
+}
+
+class NewPage extends StatelessWidget {
+  final String id;
+  final String name;
+
+  const NewPage({super.key, required this.id, required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: const Header(
+        headerTitle: "내 정보",
+      ),
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Icon(Icons.person_pin, size: 300, color: Colors.pinkAccent),
+            const SizedBox(height: 10),
+            Text(name, style: const TextStyle(fontSize: 40)),
+            const SizedBox(height: 5),
+            Text('ID : $id', style: const TextStyle(fontSize: 18)),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class TrapezoidClipper extends CustomClipper<Path> {
@@ -69,11 +100,16 @@ class _Appstate extends State<App> {
                     height: 65,
                     fit: BoxFit.fill,
                   ),
-                  const Icon(
-                    Icons.person,
-                    color: Color(0xFF646464),
-                    size: 45,
-                  ),
+                  GestureDetector(
+                    onTap: () {
+                      _navigateToNewPage(context);
+                    },
+                    child: const Icon(
+                      Icons.person,
+                      color: Color(0xFF646464),
+                      size: 45,
+                    ),
+                  )
                 ],
               ),
               const SizedBox(
@@ -268,6 +304,14 @@ class _Appstate extends State<App> {
           ),
         ),
       ],
+    );
+  }
+
+  void _navigateToNewPage(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => const NewPage(id: "USER", name: "사용자")),
     );
   }
 }

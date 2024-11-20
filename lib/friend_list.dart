@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:paymate/header.dart';
@@ -125,22 +127,18 @@ class FriendListState extends State<FriendList> {
     });
   }
 
-  void _addFriend(String id) async {
-    // Firestore 인스턴스 생성
+  void _addFriend(BuildContext context, String id) async {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
     try {
-      // 'user' 컬렉션에서 해당 id를 가진 문서 검색
       final QuerySnapshot querySnapshot =
           await firestore.collection('user').where('id', isEqualTo: id).get();
 
-      // 검색 결과가 있는지 확인
       if (querySnapshot.docs.isNotEmpty) {
         final Map<String, dynamic> data =
             querySnapshot.docs.first.data() as Map<String, dynamic>;
         final String name = data['name'] ?? 'Unknown';
 
-        // 상태 업데이트 및 Firestore에 친구 추가
         setState(() {
           _friends.add({'name': name, 'id': id});
         });
@@ -169,57 +167,63 @@ class FriendListState extends State<FriendList> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             const SizedBox(height: 30),
-            Row(
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: const Offset(0, 3),
-                      )
-                    ],
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20, horizontal: 30),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        SizedBox(width: 10),
-                        Icon(Icons.person_outline_outlined,
-                            size: 50, color: Color(0xFF646464)),
-                        SizedBox(width: 15),
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 4),
-                          child: Text(
-                            '이수현',
-                            style: TextStyle(
-                              color: Color(0xFF646464),
-                              fontSize: 30,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 20),
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 2),
-                          child: Text(
-                            'TNGUSDL',
-                            style: TextStyle(
-                              color: Color(0xFF646464),
-                              fontSize: 18,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 15),
+            GestureDetector(
+              onTap: () {
+                _navigateToNewPage(context);
+              },
+              child: Row(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: const Offset(0, 3),
+                        )
                       ],
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: const Padding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 20, horizontal: 30),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          SizedBox(width: 10),
+                          Icon(Icons.person_outline_outlined,
+                              size: 50, color: Color(0xFF646464)),
+                          SizedBox(width: 15),
+                          Padding(
+                            padding: EdgeInsets.only(bottom: 4),
+                            child: Text(
+                              '이수현',
+                              style: TextStyle(
+                                color: Color(0xFF646464),
+                                fontSize: 30,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 20),
+                          Padding(
+                            padding: EdgeInsets.only(bottom: 2),
+                            child: Text(
+                              'TNGUSDL',
+                              style: TextStyle(
+                                color: Color(0xFF646464),
+                                fontSize: 18,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 15),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 30),
             GestureDetector(
@@ -279,7 +283,7 @@ class FriendListState extends State<FriendList> {
                           onPressed: () {
                             String enteredId = _idController.text;
                             Navigator.of(context).pop();
-                            _addFriend(enteredId);
+                            _addFriend(context, enteredId);
                           },
                         ),
                       ],
@@ -384,6 +388,44 @@ class FriendListState extends State<FriendList> {
                 },
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _navigateToNewPage(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => const NewPage(id: "TNGUSDL", name: "이수현")),
+    );
+  }
+}
+
+class NewPage extends StatelessWidget {
+  final String id;
+  final String name;
+
+  const NewPage({super.key, required this.id, required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: const Header(
+        headerTitle: "내 정보",
+      ),
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Icon(Icons.person_pin, size: 300, color: Colors.pinkAccent),
+            const SizedBox(height: 10),
+            Text(name, style: const TextStyle(fontSize: 40)),
+            const SizedBox(height: 5),
+            Text('ID : $id', style: const TextStyle(fontSize: 18)),
+            const SizedBox(height: 20),
           ],
         ),
       ),
