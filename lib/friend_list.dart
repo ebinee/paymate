@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:paymate/header.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -179,9 +180,8 @@ class FriendListState extends State<FriendList> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('친구 목록'),
-        backgroundColor: const Color(0xFFf2e8da),
+      appBar: const Header(
+        headerTitle: "친구 목록",
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30),
