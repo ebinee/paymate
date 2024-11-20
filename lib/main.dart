@@ -2,52 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:paymate/financial_ledger.dart';
 import 'package:paymate/friend_list.dart';
 import 'package:paymate/group_list.dart';
-import 'package:fl_chart/fl_chart.dart';
-
-class IndividualBar {
-  final int x;
-  final double y;
-
-  IndividualBar({
-    required this.x,
-    required this.y,
-  });
-}
-
-class BarData {
-  final double mon;
-  final double tue;
-  final double wed;
-  final double thu;
-  final double fri;
-  final double sat;
-
-  BarData({
-    required this.mon,
-    required this.tue,
-    required this.wed,
-    required this.thu,
-    required this.fri,
-    required this.sat,
-  });
-
-  List<IndividualBar> barData = [];
-  void initializeBarData() {
-    barData = [
-      IndividualBar(x: 0, y: mon),
-      IndividualBar(x: 1, y: tue),
-      IndividualBar(x: 2, y: wed),
-      IndividualBar(x: 3, y: thu),
-      IndividualBar(x: 4, y: fri),
-      IndividualBar(x: 5, y: sat),
-    ];
-  }
-}
 
 void main() {
   runApp(const MaterialApp(
     home: Scaffold(
-      backgroundColor: Colors.white, // 사다리꼴 바깥 영역의 배경색
+      backgroundColor: Colors.white,
       body: App(),
     ),
   ));
@@ -64,10 +23,10 @@ class TrapezoidClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     Path path = Path();
-    path.lineTo(0, 0); // 왼쪽 위
-    path.lineTo(size.width, 0); // 오른쪽 위
-    path.lineTo(size.width, size.height - 40); // 오른쪽 아래
-    path.lineTo(0, size.height); // 왼쪽 아래
+    path.lineTo(0, 0);
+    path.lineTo(size.width, 0);
+    path.lineTo(size.width, size.height - 40);
+    path.lineTo(0, size.height);
     path.close();
     return path;
   }
@@ -81,16 +40,6 @@ class TrapezoidClipper extends CustomClipper<Path> {
 class _Appstate extends State<App> {
   @override
   Widget build(BuildContext context) {
-    BarData barData = BarData(
-      mon: 5,
-      tue: 7,
-      wed: 6,
-      thu: 8,
-      fri: 5,
-      sat: 4,
-    );
-    barData.initializeBarData();
-
     return Stack(
       children: [
         ClipPath(
@@ -315,73 +264,6 @@ class _Appstate extends State<App> {
                   ],
                 ),
               ),
-              Expanded(
-                  child: Container(
-                      margin: const EdgeInsets.only(
-                          left: 20.0, right: 20.0, bottom: 20.0, top: 10.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16), // 둥글게 만들기
-                        border: Border.all(
-                          color: const Color(0xFFFFB2A5), // 테두리 색상
-                          width: 2, // 테두리 두께
-                        ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 30.0),
-                        child: BarChart(
-                          BarChartData(
-                            borderData: FlBorderData(
-                              show: false,
-                            ),
-                            gridData: FlGridData(show: false),
-                            titlesData: FlTitlesData(
-                              leftTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
-                              ),
-                              rightTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
-                              ),
-                              topTitles: AxisTitles(
-                                sideTitles: SideTitles(showTitles: false),
-                              ),
-                              bottomTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  getTitlesWidget: (value, meta) {
-                                    const days = [
-                                      'FEB',
-                                      'MAR',
-                                      'APRIL',
-                                      'MAY',
-                                      'JUN',
-                                      'JUL',
-                                    ];
-                                    return Text(
-                                      days[value.toInt()],
-                                      style: const TextStyle(fontSize: 12),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                            barGroups: barData.barData
-                                .map(
-                                  (data) => BarChartGroupData(
-                                    x: data.x,
-                                    barRods: [
-                                      BarChartRodData(
-                                        toY: data.y,
-                                        color: const Color(0xFFFFB2A5),
-                                        width: 35,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                                .toList(),
-                          ),
-                        ),
-                      ))),
             ]),
           ),
         ),

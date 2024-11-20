@@ -8,7 +8,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  fl_chart: ^0.60.0
+  fl_chart: ^0.68.0
   cupertino_icons: ^1.0.6
   percent_indicator: ^4.2.3
   table_calendar: ^3.1.2

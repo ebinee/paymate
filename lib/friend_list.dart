@@ -1,24 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:paymate/header.dart';
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: FriendList(),
-    );
-  }
-}
 
 class FriendList extends StatefulWidget {
   const FriendList({super.key});
@@ -29,7 +11,6 @@ class FriendList extends StatefulWidget {
 
 class FriendListState extends State<FriendList> {
   final TextEditingController _idController = TextEditingController();
-  Map<String, String> _idToNameMap = {};
   List<Map<String, String>> _friends = [];
 
   @override
@@ -55,7 +36,6 @@ class FriendListState extends State<FriendList> {
       }
 
       setState(() {
-        _idToNameMap = idToNameMap;
         _friends = friends;
       });
     } catch (e) {
