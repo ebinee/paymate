@@ -25,9 +25,9 @@ class GroupChat extends StatefulWidget {
 }
 
 class GroupChatState extends State<GroupChat> {
-  final List<Map<String, dynamic>> _schedules = [];
+  //final List<Map<String, dynamic>> _schedules = [];
 
-  void _navigateToAddSchedule() async {
+  /*void _navigateToAddSchedule() async {
     final scheduleData = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -43,10 +43,11 @@ class GroupChatState extends State<GroupChat> {
       });
     }
   }
+  */
 
   final Map<String, IconData> _categoryIcons = {
     '식비': Icons.fastfood,
-    '카페 간식': Icons.local_cafe,
+    '카페/간식': Icons.local_cafe,
     '편의점/잡화': Icons.shopping_bag,
     '취미/여가': Icons.sports_esports,
     '의료/건강': Icons.local_hospital,
@@ -65,7 +66,9 @@ class GroupChatState extends State<GroupChat> {
   Widget build(BuildContext context) {
     // 내 프로필을 포함한 프로필 목록
     final groupuser = [
-      {'name': '나'},
+      {'name': '나',
+        'id' : 'me',
+      },
       ...widget.user,
     ];
 
@@ -110,11 +113,11 @@ class GroupChatState extends State<GroupChat> {
                 ),
               ),
             // 일정 목록 표시
-            ..._schedules.map((schedule) {
+            ...widget.schedule.map((schedule) {
               // 일정에 내 프로필을 추가한 프로필 목록
-              final scheduleProfiles = [
-                {'name': '나'},
-                ...schedule['friends'],
+              final scheduleUser = [
+                {'name': '나','id':'me'},
+                ...schedule['schedule_user'],
               ];
 
               return Padding(
@@ -155,7 +158,7 @@ class GroupChatState extends State<GroupChat> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              schedule['name'], // 일정 이름
+                              schedule['title'], // 일정 이름
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -165,11 +168,9 @@ class GroupChatState extends State<GroupChat> {
                             const SizedBox(height: 5),
                             // 일정 친구들 프로필
                             Row(
-                              children: scheduleProfiles.map<Widget>((friend) {
+                              children: scheduleUser.map<Widget>((friend) {
                               // `friend`가 Map 타입인지 확인하고 `name`이 문자열인지 확인
-                                final name = friend is Map<String, dynamic> ? friend['name'] : null;
-                                final displayName = (name is String && name.isNotEmpty) ? name : ' ';
-
+                                final name = /*friend is Map<String, dynamic> ?*/ friend['name'] ??'';
                                   return Container(
                                     margin: const EdgeInsets.only(right: 5.0),
                                     width: 30,
@@ -180,7 +181,7 @@ class GroupChatState extends State<GroupChat> {
                                       ),
                                     child: Center(
                                      child: Text(
-                                        displayName.isNotEmpty ? displayName[0] : ' ', // 이름의 첫 글자만 표시
+                                        name.isNotEmpty ? name[0] : ' ', // 이름의 첫 글자만 표시
                                         style: const TextStyle(
                                         color: Color(0xFF646464),
                                         fontWeight: FontWeight.bold,
@@ -194,7 +195,7 @@ class GroupChatState extends State<GroupChat> {
                             Align(
                               alignment: Alignment.bottomRight,
                               child: Text(
-                                '${schedule['amount']}원',
+                                '${schedule['money']}원',
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,

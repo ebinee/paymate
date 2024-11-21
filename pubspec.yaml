@@ -37,13 +37,11 @@ dependencies:
   cupertino_icons: ^1.0.6
   fl_chart: ^0.68.0
   percent_indicator: ^4.2.3
-<<<<<<< HEAD
 
   table_calendar: ^3.1.2
   intl: ^0.19.0
   firebase_core: ^3.5.0
-=======
->>>>>>> 342e6af4b1bd6d60526855762e3de87c7a859a91
+
   cloud_firestore: ^5.4.2
 
 dev_dependencies:
