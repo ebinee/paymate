@@ -11,6 +11,9 @@ class GroupChat extends StatefulWidget {
   final String meetingName; // 모임 이름
   final List<Map<String,dynamic>> schedule;
   final List<Map<String, dynamic>> user; // 선택된 프로필
+  final String groupId;
+
+  
 
 
   const GroupChat({
@@ -18,6 +21,7 @@ class GroupChat extends StatefulWidget {
     required this.meetingName,
     required this.schedule,
     required this.user,
+    required this.groupId,
   });
 
   @override
@@ -220,7 +224,10 @@ class GroupChatState extends State<GroupChat> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AddSchedule(groupuser: groupuser),
+        builder: (context) => AddSchedule(
+          groupuser: groupuser,
+          groupId:widget.groupId,
+          ),
       ),
     );
   },

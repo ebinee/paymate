@@ -8,10 +8,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AddSchedule extends StatefulWidget {
   final List<Map<String, dynamic>> groupuser; // 선택된 친구들 목록
+  final String groupId;
 
   const AddSchedule({
     super.key, 
-    required this.groupuser});
+    required this.groupuser,
+    required this.groupId,
+    });
 
   @override
   AddScheduleState createState() => AddScheduleState();
@@ -21,12 +24,11 @@ class AddScheduleState extends State<AddSchedule> {
   final TextEditingController _scheduleNameController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   String? _selectedCategory;
-  final Set<String> _selectedFriends = {};
-  final List<Map<String,dynamic>> groupUser = [];
+  final List<Map<String,dynamic>> scheduleUser = [];
 
   final List<String> _categories = [
     '식비',
-    '카페 간식',
+    '카페/간식',
     '편의점/잡화',
     '취미/여가',
     '의료/건강',
@@ -40,6 +42,12 @@ class AddScheduleState extends State<AddSchedule> {
     '공과금',
     '기타'
   ];
+
+  bool _isCreateButtonEnabled() {
+    return (_scheduleNameController.text.isNotEmpty &&
+        _selectedCategory != null &&
+        _amountController.text.isNotEmpty);
+  }
 
   @override
  Widget build(BuildContext context) {
@@ -232,18 +240,18 @@ class AddScheduleState extends State<AddSchedule> {
                       child: ListView.builder(
                         itemCount: widget.groupuser.length,
                         itemBuilder: (context, index) {
-                          final friend = widget.groupuser[index]['name']!;
-                          final isSelected = _selectedFriends.contains(friend);
+                          final friend = widget.groupuser[index]!;
+                          final isSelected = scheduleUser.contains(friend);
                           return CheckboxListTile(
-                            title: Text(friend),
+                            title: Text(friend['name']),
                             value: isSelected,
                             activeColor: const Color(0xFFFFB2A5),
                             onChanged: (bool? value) {
                               setState(() {
                                 if (value == true) {
-                                  _selectedFriends.add(friend);
+                                  scheduleUser.add(friend);
                                 } else {
-                                  _selectedFriends.remove(friend);
+                                  scheduleUser.remove(friend);
                                 }
                               });
                             },
@@ -253,7 +261,36 @@ class AddScheduleState extends State<AddSchedule> {
                     ),
                     const SizedBox(height: 30),
                     ElevatedButton(
-                      onPressed: _createSchedule,
+                      onPressed: _isCreateButtonEnabled()
+                      ? () async{
+                        try{
+                          final firestore = FirebaseFirestore.instance;
+                        // 'group' 컬렉션에 새 문서 생성 및 데이터 저장
+            await firestore
+                .collection('group') // 그룹 컬렉션에 접근
+                .doc(widget.groupId) // 특정 그룹 문서에 접근
+                .collection('schedule') // 해당 그룹의 'schedule' 하위 컬렉션에 접근
+                .add({
+              'category': _selectedCategory!,
+              'money': int.parse(_amountController.text), // 금액은 숫자로 저장
+              'scheduleDate': Timestamp.now(), // 생성 시간
+              'schedule_user': scheduleUser, // 선택된 친구 목록
+              'title': _scheduleNameController.text, // 일정 이름
+            });
+if(mounted){
+      Navigator.pop(context);
+}}
+catch(e){
+                        // 에러 핸들링 (예: 스낵바로 에러 메시지 표시)
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('스케쥴 생성 실패: $e')),
+                          );
+                        }
+                      }
+                    }
+                  : null,
+                      
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 50.0),
                         backgroundColor: Colors.grey,
@@ -277,27 +314,5 @@ class AddScheduleState extends State<AddSchedule> {
         ),
       ),
     ));
-  }
-
-
-
-  void _createSchedule() {
-    if (_scheduleNameController.text.isEmpty ||
-        _selectedCategory == null ||
-        _amountController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('모든 필드를 입력해 주세요')),
-      );
-      return;
-    }
-
-    final scheduleData = {
-      'name': _scheduleNameController.text,
-      'category': _selectedCategory!,
-      'friends': _selectedFriends.toList(),
-      'amount': _amountController.text,
-    };
-
-    Navigator.pop(context, scheduleData);
   }
 }

@@ -215,13 +215,14 @@ class _AddGroupList extends State<AddGroupList> {
                         // Firestore 인스턴스 가져오기
                         final firestore = FirebaseFirestore.instance;
                         // 'group' 컬렉션에 새 문서 생성 및 데이터 저장
-                        await firestore.collection('group').add({
+                        final DocumentReference docRef = await firestore.collection('group').add({
                           
                           'date': FieldValue.serverTimestamp(), // 생성 시간 필드 추가
                           'meetingName': meetingName,
                           'schedule':[],
                           'user': selectedProfiles,
                           });
+                        final String groupId = docRef.id; // 새로 생성된 문서 ID 가져오기
 
                         // 성공 시 화면 전환
                         if (mounted) {
@@ -232,6 +233,7 @@ class _AddGroupList extends State<AddGroupList> {
                                 meetingName: meetingName,
                                 schedule:[],
                                 user:selectedProfiles,
+                                groupId:groupId,
                               ),
                             ),
                           );

@@ -148,6 +148,7 @@ class GroupCard extends StatelessWidget {
                     meetingName: groupName,
                     schedule: schedule,
                     user: users,
+                    groupId: groupId,
                   ),
                 ),
               );
