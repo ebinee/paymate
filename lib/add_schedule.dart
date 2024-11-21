@@ -266,17 +266,27 @@ class AddScheduleState extends State<AddSchedule> {
                         try{
                           final firestore = FirebaseFirestore.instance;
                         // 'group' 컬렉션에 새 문서 생성 및 데이터 저장
-            await firestore
-                .collection('group') // 그룹 컬렉션에 접근
-                .doc(widget.groupId) // 특정 그룹 문서에 접근
-                .collection('schedule') // 해당 그룹의 'schedule' 하위 컬렉션에 접근
-                .add({
+                        // 현재 그룹 문서 가져오기
+            final groupDoc = firestore.collection('group').doc(widget.groupId);
+
+            // 기존 schedule 데이터를 읽어옴
+            final groupSnapshot = await groupDoc.get();
+            final existingSchedule = (groupSnapshot.data()?['schedule'] ?? []) as List;
+
+            // 새로운 스케줄 데이터 생성
+            final newSchedule = {
               'category': _selectedCategory!,
               'money': int.parse(_amountController.text), // 금액은 숫자로 저장
               'scheduleDate': Timestamp.now(), // 생성 시간
               'schedule_user': scheduleUser, // 선택된 친구 목록
               'title': _scheduleNameController.text, // 일정 이름
-            });
+            };
+
+            // 기존 데이터에 새 데이터를 추가
+            existingSchedule.add(newSchedule);
+
+            // 그룹 문서의 schedule 필드 업데이트
+            await groupDoc.update({'schedule': existingSchedule});
 if(mounted){
       Navigator.pop(context);
 }}
