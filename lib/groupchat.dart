@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 //import 'package:paymate/main.dart';
 import 'package:paymate/header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -29,26 +30,6 @@ class GroupChat extends StatefulWidget {
 }
 
 class GroupChatState extends State<GroupChat> {
-  //final List<Map<String, dynamic>> _schedules = [];
-
-  /*void _navigateToAddSchedule() async {
-    final scheduleData = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddSchedule(
-          groupuser: widget.user, // 선택된 친구 목록 전달
-        ),
-      ),
-    );
-
-    if (scheduleData != null) {
-      setState(() {
-        _schedules.add(scheduleData);
-      });
-    }
-  }
-  */
-
   final Map<String, IconData> _categoryIcons = {
     '식비': Icons.fastfood,
     '카페/간식': Icons.local_cafe,
@@ -72,9 +53,13 @@ class GroupChatState extends State<GroupChat> {
     final groupuser = [
       ...widget.user,
     ];
-
+    for (var user in groupuser) {
+      if (!user.containsKey('amount')) {
+        user['amount'] = 0;  // amount 필드가 없으면 추가하고 0으로 초기화
+      }
+    }
     return Scaffold(
-      appBar: const Header(headerTitle: '모임 목록'),
+      appBar: Header(headerTitle: widget.meetingName),
       backgroundColor: Colors.white,
       body: Container(
         color: Colors.white,
@@ -107,7 +92,7 @@ class GroupChatState extends State<GroupChat> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '+10000',
+                                profile['id']=='User1'?'' :'${profile['amount']}원',                                  
                             style: const TextStyle(
                               fontSize: 12.0,
                             ),
@@ -120,15 +105,14 @@ class GroupChatState extends State<GroupChat> {
                 ),
               ),
             // 일정 목록 표시
-            ...widget.schedule.map((schedule) {
-              // 일정에 내 프로필을 추가한 프로필 목록
-              final scheduleUser = [
-                ...schedule['schedule_user'],
-              ];
-
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 20.0),
-                child: Row(
+            Expanded(
+              child:ListView.builder(
+                itemCount: widget.schedule.length,
+                itemBuilder: (context,index){
+                final schedule=widget.schedule[index];
+                  return Padding(
+                  padding: const EdgeInsets.only(bottom: 20.0),
+                  child: Row(
                   children: [
                     // 분홍색 원형 아이콘
                     Container(
@@ -144,85 +128,79 @@ class GroupChatState extends State<GroupChat> {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    // 일정 정보 표시
+
                     Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(15.0),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(15.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.3),
-                              spreadRadius: 2,
-                              blurRadius: 5,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              schedule['title'], // 일정 이름
+                      child: ListTile(
+                        
+                      title: Text(
+                        schedule['title'], // 일정 이름
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF646464),
-                              ),
-                            ),
-                            const SizedBox(height: 5),
-                            // 일정 친구들 프로필
-                            Align(
-                              alignment: Alignment.bottomLeft,
-                              child:
-                            Row(
-                              children: scheduleUser.map<Widget>((friend) {
-                              // `friend`가 Map 타입인지 확인하고 `name`이 문자열인지 확인
-                                final name = /*friend is Map<String, dynamic> ?*/ friend['name'] ??'';
-                                  return Container(
-                                    margin: const EdgeInsets.only(right: 5.0),
-                                    width: 30,
-                                    height: 30,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.grey.shade300,
-                                      ),
-                                    child: Center(
-                                     child: Text(
-                                        name.isNotEmpty ?( friend['id']=='User1'?'나': name[0]) : ' ', // 이름의 첫 글자만 표시
-                                        style: const TextStyle(
-                                        color: Color(0xFF646464),
-                                        fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-                        ),
-                            Align(
-                              alignment: Alignment.bottomRight,
-                              child: Text(
-                                '${schedule['money']}원',
+
+                      ),
+                      
+                      //textAlign: TextAlign.start,
+                      ),
+                      subtitle:Row(
+          children: (schedule['schedule_user']??[]).map<Widget>((friend) {
+          final name = friend['name'] ?? '';
+
+          return Container(
+            margin: const EdgeInsets.only(right: 5.0),
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey.shade300,
+            ),
+            child: Center(
+              child: Text(
+                name.isNotEmpty
+                    ? (friend['id'] == 'User1' ? '나' : name[0])
+                    : ' ', // 이름의 첫 글자만 표시
+                style: const TextStyle(
+                  color: Color(0xFF646464),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+                      trailing: 
+                        Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                               Text(
+                          schedule['scheduleCreator']['id']=='User1'?'나':schedule['scheduleCreator']['name'],
+                          ),
+                          const SizedBox(height:10),
+                                    Text(
+                                '${schedule['money']}원',                                  
+                                textAlign:TextAlign.right,
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFF646464),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                                ),),
+
+                                  ],
+
+                        )
                       ),
                     ),
-                  ],
-                ),
-              );
-            }),
+                  ]
+                  ),
+                );
+                },
+              ),
+            )            
           ],
         ),
       ),
+
       // 우측 하단에 동그란 + 버튼 추가
       floatingActionButton: FloatingActionButton(
   onPressed: () {

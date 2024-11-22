@@ -261,6 +261,7 @@ class AddScheduleState extends State<AddSchedule> {
             final newSchedule = {
               'category': _selectedCategory!,
               'money': int.parse(_amountController.text), // 금액은 숫자로 저장
+              'scheduleCreator': {'id':'User1','name':'User1'}, // 생성 시간
               'scheduleDate': Timestamp.now(), // 생성 시간
               'schedule_user': scheduleUser, // 선택된 친구 목록
               'title': _scheduleNameController.text, // 일정 이름
