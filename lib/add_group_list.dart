@@ -71,20 +71,8 @@ class _AddGroupList extends State<AddGroupList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF2E8DA), // 상단바 배경색
-        title: const Text(
-          '모임 추가',
-          style: TextStyle(color: Colors.black), // 상단바 텍스트
-        ),
-        iconTheme: const IconThemeData(color: Colors.black), // 상단바 아이콘
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
+      appBar: const Header(headerTitle: '모임 추가'),
+      backgroundColor: Colors.white,
       body: Container(
         color: Colors.white,
         padding: const EdgeInsets.all(16.0),
@@ -220,7 +208,7 @@ class _AddGroupList extends State<AddGroupList> {
                           'date': FieldValue.serverTimestamp(), // 생성 시간 필드 추가
                           'meetingName': meetingName,
                           'schedule':[],
-                          'user': selectedProfiles,
+                          'user': [{'name':'User1','id':'User1',}as Map<String, dynamic>]  + selectedProfiles,
                           });
                         final String groupId = docRef.id; // 새로 생성된 문서 ID 가져오기
 

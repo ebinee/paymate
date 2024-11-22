@@ -52,24 +52,8 @@ class AddScheduleState extends State<AddSchedule> {
   @override
  Widget build(BuildContext context) {
   return Scaffold(
-    appBar: PreferredSize(
-      preferredSize: const Size.fromHeight(50.0),
-      child: AppBar(
-        backgroundColor: const Color(0xFFF2E8DA),
-        elevation: 0,
-        title: const Text(
-          '일정 추가',
-          style: TextStyle(color: Color(0xFF646464)),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded, color: Color(0xFF646464)),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-    ),
-    backgroundColor: Colors.white,
+      appBar: const Header(headerTitle: '모임 목록'),
+      backgroundColor: Colors.white,
     body: SingleChildScrollView(
       child: Center(
         child: Padding(

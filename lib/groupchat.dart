@@ -70,17 +70,12 @@ class GroupChatState extends State<GroupChat> {
   Widget build(BuildContext context) {
     // 내 프로필을 포함한 프로필 목록
     final groupuser = [
-      {'name': '나',
-        'id' : 'me',
-      },
       ...widget.user,
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF2E8DA),
-        title: Text(widget.meetingName), // 모임 이름 표시
-      ),
+      appBar: const Header(headerTitle: '모임 목록'),
+      backgroundColor: Colors.white,
       body: Container(
         color: Colors.white,
         padding: const EdgeInsets.all(10.0),
@@ -105,11 +100,19 @@ class GroupChatState extends State<GroupChat> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            profile['name']!,
+                            profile['id']=='User1'?'나':profile['name']!,
                             style: const TextStyle(
                               fontSize: 12.0,
                             ),
                           ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '+10000',
+                            style: const TextStyle(
+                              fontSize: 12.0,
+                            ),
+                          ),
+                          const SizedBox(height: 30),
                         ],
                       ),
                     );
@@ -120,7 +123,6 @@ class GroupChatState extends State<GroupChat> {
             ...widget.schedule.map((schedule) {
               // 일정에 내 프로필을 추가한 프로필 목록
               final scheduleUser = [
-                {'name': '나','id':'me'},
                 ...schedule['schedule_user'],
               ];
 
@@ -171,6 +173,9 @@ class GroupChatState extends State<GroupChat> {
                             ),
                             const SizedBox(height: 5),
                             // 일정 친구들 프로필
+                            Align(
+                              alignment: Alignment.bottomLeft,
+                              child:
                             Row(
                               children: scheduleUser.map<Widget>((friend) {
                               // `friend`가 Map 타입인지 확인하고 `name`이 문자열인지 확인
@@ -185,7 +190,7 @@ class GroupChatState extends State<GroupChat> {
                                       ),
                                     child: Center(
                                      child: Text(
-                                        name.isNotEmpty ? name[0] : ' ', // 이름의 첫 글자만 표시
+                                        name.isNotEmpty ?( friend['id']=='User1'?'나': name[0]) : ' ', // 이름의 첫 글자만 표시
                                         style: const TextStyle(
                                         color: Color(0xFF646464),
                                         fontWeight: FontWeight.bold,
@@ -195,7 +200,7 @@ class GroupChatState extends State<GroupChat> {
                                   );
                                 }).toList(),
                               ),
-                            const SizedBox(height: 10),
+                        ),
                             Align(
                               alignment: Alignment.bottomRight,
                               child: Text(
