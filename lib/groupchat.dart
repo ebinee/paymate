@@ -10,18 +10,11 @@ import 'package:paymate/add_schedule.dart';
 
 class GroupChat extends StatefulWidget {
   final String meetingName; // 모임 이름
-  final List<Map<String,dynamic>> schedule;
-  final List<Map<String, dynamic>> user; // 선택된 프로필
   final String groupId;
-
-  
-
 
   const GroupChat({
     super.key,
     required this.meetingName,
-    required this.schedule,
-    required this.user,
     required this.groupId,
   });
 
@@ -47,17 +40,83 @@ class GroupChatState extends State<GroupChat> {
     '기타': Icons.category,
   };
 
+List<Map<String, dynamic>> groupuser=[];
+List<Map<String, dynamic>> schedule=[];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchGroupUsers(); 
+    fetchSchedule();         
+  }
+
+  // 특정 groupId에 해당하는 그룹의 user 필드를 가져오는 메서드
+  Future<void> fetchGroupUsers() async {
+    try {
+      String groupId = widget.groupId; 
+      DocumentSnapshot groupDoc = await FirebaseFirestore.instance.collection('group').doc(groupId).get();
+
+      if (groupDoc.exists) {
+        List<dynamic> users = groupDoc['user']; 
+        List<Map<String, dynamic>> fetchedGroupUsers = users.map((user) {
+          return {
+            'id': user['id'],
+            'name': user['name'],
+          };
+        }).toList();
+
+        // 상태 업데이트
+        setState(() {
+          groupuser = fetchedGroupUsers;
+        });
+      } else {
+        print('Group not found');
+      }
+    } catch (e) {
+      print('그룹 데이터를 가져오는 중 오류 발생: $e');
+    }
+  }
+
+Future<void> fetchSchedule() async {
+  try {
+    String groupId = widget.groupId;
+
+    // groupId로 그룹을 찾아 schedule 필드를 가져옵니다.
+      DocumentSnapshot groupDoc = await FirebaseFirestore.instance.collection('group').doc(groupId).get();
+
+    // 문서가 존재하는지 확인
+    if (groupDoc.exists) {
+      // schedule 필드를 가져옵니다.
+        List<dynamic> groupSchedule = groupDoc['schedule'];
+        List<Map<String, dynamic>> fetchedSchedule = groupSchedule.map((schedule) {
+          return {
+          'category': schedule['category'],
+          'money': schedule['money'],
+          'scheduleCreator': schedule['scheduleCreator'],
+          'scheduleDate':schedule['scheduleDate'],
+          'schedule_user': schedule['schedule_user'],
+          'title': schedule['title'],
+          };
+        }).toList();
+        setState(() {
+          schedule = fetchedSchedule;
+    });} else {
+      print("Group not found");
+    }
+  } catch (e) {
+    print("Error fetching schedule: $e");
+  }
+}
+
   @override
   Widget build(BuildContext context) {
-    // 내 프로필을 포함한 프로필 목록
-    final groupuser = [
-      ...widget.user,
-    ];
     for (var user in groupuser) {
       if (!user.containsKey('amount')) {
         user['amount'] = 0;  // amount 필드가 없으면 추가하고 0으로 초기화
       }
     }
+
+
     return Scaffold(
       appBar: Header(headerTitle: widget.meetingName),
       backgroundColor: Colors.white,
@@ -92,8 +151,9 @@ class GroupChatState extends State<GroupChat> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                                profile['id']=='User1'?'' :'${profile['amount']}원',                                  
-                            style: const TextStyle(
+profile['amount'] <= 0
+    ? (profile['id'] == 'User1' ? '' : '${profile['amount']}원')
+    : '+ ${profile['amount']}원',                            style: const TextStyle(
                               fontSize: 12.0,
                             ),
                           ),
@@ -107,9 +167,9 @@ class GroupChatState extends State<GroupChat> {
             // 일정 목록 표시
             Expanded(
               child:ListView.builder(
-                itemCount: widget.schedule.length,
+                itemCount: schedule.length,
                 itemBuilder: (context,index){
-                final schedule=widget.schedule[index];
+                final scheduleItem=schedule[index];
                   return Padding(
                   padding: const EdgeInsets.only(bottom: 20.0),
                   child: Row(
@@ -123,74 +183,86 @@ class GroupChatState extends State<GroupChat> {
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        _categoryIcons[schedule['category']],
+                        _categoryIcons[scheduleItem['category']],
                         color: Colors.white,
                       ),
                     ),
                     const SizedBox(width: 10),
 
                     Expanded(
-                      child: ListTile(
-                        
-                      title: Text(
-                        schedule['title'], // 일정 이름
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF646464),
-
-                      ),
-                      
-                      //textAlign: TextAlign.start,
-                      ),
-                      subtitle:Row(
-          children: (schedule['schedule_user']??[]).map<Widget>((friend) {
-          final name = friend['name'] ?? '';
-
-          return Container(
-            margin: const EdgeInsets.only(right: 5.0),
-            width: 30,
-            height: 30,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.grey.shade300,
-            ),
-            child: Center(
-              child: Text(
-                name.isNotEmpty
-                    ? (friend['id'] == 'User1' ? '나' : name[0])
-                    : ' ', // 이름의 첫 글자만 표시
-                style: const TextStyle(
-                  color: Color(0xFF646464),
-                  fontWeight: FontWeight.bold,
+  child: Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8.0), // Add vertical padding
+    child: Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15), // Rounded corners for the card
+      ),
+      color: Colors.white,
+      elevation: 5, // Shadow effect for elevation
+      shadowColor: Colors.grey.withOpacity(0.5), // Light shadow
+      child: ListTile(
+        contentPadding: EdgeInsets.all(16.0), // Add padding inside ListTile
+        title: Text(
+          scheduleItem['title'], // Event title
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF646464),
+          ),
+        ),
+        subtitle: Row(
+          children: (scheduleItem['schedule_user'] ?? []).map<Widget>((friend) {
+            final name = friend['name'] ?? '';
+            return Container(
+              margin: const EdgeInsets.only(right: 5.0),
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.grey.shade300, // Light grey background for avatar
+              ),
+              child: Center(
+                child: Text(
+                  name.isNotEmpty
+                      ? (friend['id'] == 'User1' ? '나' : name[0])
+                      : ' ', // Display the first letter of the name or '나'
+                  style: const TextStyle(
+                    color: Color(0xFF646464),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
+            );
+          }).toList(),
+        ),
+        trailing: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              scheduleItem['scheduleCreator']['id'] == 'User1'
+                  ? '나'
+                  : scheduleItem['scheduleCreator']['name'],
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF646464),
+              ),
             ),
-          );
-        }).toList(),
+            const SizedBox(height: 8),
+            Text(
+              '${scheduleItem['money']}원',
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF646464),
+              ),
+            ),
+          ],
+        ),
       ),
-                      trailing: 
-                        Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                               Text(
-                          schedule['scheduleCreator']['id']=='User1'?'나':schedule['scheduleCreator']['name'],
-                          ),
-                          const SizedBox(height:10),
-                                    Text(
-                                '${schedule['money']}원',                                  
-                                textAlign:TextAlign.right,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF646464),
-                                ),),
-
-                                  ],
-
-                        )
-                      ),
-                    ),
+    ),
+  ),
+)
                   ]
                   ),
                 );
@@ -208,7 +280,6 @@ class GroupChatState extends State<GroupChat> {
       context,
       MaterialPageRoute(
         builder: (context) => AddSchedule(
-          groupuser: groupuser,
           groupId:widget.groupId,
           ),
       ),

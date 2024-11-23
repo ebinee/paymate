@@ -22,7 +22,7 @@ class _AddGroupList extends State<AddGroupList> {
     fetchFriends();
   }
 
-  Future<void> fetchFriends() async {
+  /*Future<void> fetchFriends() async {
     try {
       // Firestore의 'group' 컬렉션 참조
       CollectionReference friendsCollection =
@@ -46,6 +46,30 @@ class _AddGroupList extends State<AddGroupList> {
     } catch (e) {
       print("그룹 데이터를 가져오는 중 오류 발생: $e");
     }
+  }
+*/
+  void fetchFriends() {
+    // Firestore의 'user' 컬렉션 참조
+    CollectionReference friendsCollection =
+        FirebaseFirestore.instance.collection('user');
+
+    // 실시간 데이터 스트림을 구독
+    friendsCollection.snapshots().listen((snapshot) {
+      // 데이터를 List<Map<String, dynamic>>로 변환
+      List<Map<String, dynamic>> fetchedFriends = snapshot.docs.map((doc) {
+        return {
+          'id': doc['id'],  // 문서 ID
+          'name': doc['name'],  // 'name' 필드
+        };
+      }).toList();
+
+      // 상태 업데이트
+      setState(() {
+        friends = fetchedFriends;
+      });
+    }, onError: (e) {
+      print("그룹 데이터를 가져오는 중 오류 발생: $e");
+    });
   }
 
   String meetingName = ''; // 모임 이름
@@ -219,8 +243,6 @@ class _AddGroupList extends State<AddGroupList> {
                             MaterialPageRoute(
                               builder: (context) => GroupChat(
                                 meetingName: meetingName,
-                                schedule:[],
-                                user:selectedProfiles,
                                 groupId:groupId,
                               ),
                             ),

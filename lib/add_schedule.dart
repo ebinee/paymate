@@ -7,12 +7,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 
 class AddSchedule extends StatefulWidget {
-  final List<Map<String, dynamic>> groupuser; // 선택된 친구들 목록
   final String groupId;
 
   const AddSchedule({
     super.key, 
-    required this.groupuser,
     required this.groupId,
     });
 
@@ -24,7 +22,9 @@ class AddScheduleState extends State<AddSchedule> {
   final TextEditingController _scheduleNameController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   String? _selectedCategory;
-  final List<Map<String,dynamic>> scheduleUser = [];
+  List<Map<String,dynamic>> groupuser = [];
+
+  List<Map<String,dynamic>> scheduleUser = [];
 
   final List<String> _categories = [
     '식비',
@@ -42,6 +42,36 @@ class AddScheduleState extends State<AddSchedule> {
     '공과금',
     '기타'
   ];
+
+@override
+  void initState() {
+    super.initState();
+    _fetchGroupUsers();
+  }
+
+  // Fetch users in the group from Firestore
+  Future<void> _fetchGroupUsers() async {
+    try {
+      final groupDoc = FirebaseFirestore.instance.collection('group').doc(widget.groupId);
+      final docSnapshot = await groupDoc.get();
+
+      if (docSnapshot.exists) {
+        final users = docSnapshot['user'] as List<dynamic>;
+        setState(() {
+          groupuser = users.map((user) => {
+            'id': user['id'],
+            'name': user['name'],
+          }).toList();
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('유저 로딩 실패: $e')),
+        );
+      }
+    }
+  }
 
   bool _isCreateButtonEnabled() {
     return (_scheduleNameController.text.isNotEmpty &&
@@ -222,9 +252,9 @@ class AddScheduleState extends State<AddSchedule> {
                     SizedBox(
                       height: 150,
                       child: ListView.builder(
-                        itemCount: widget.groupuser.length,
+                        itemCount: groupuser.length,
                         itemBuilder: (context, index) {
-                          final friend = widget.groupuser[index]!;
+                          final friend = groupuser[index]!;
                           final isSelected = scheduleUser.contains(friend);
                           return CheckboxListTile(
                             title: Text(friend['name']),

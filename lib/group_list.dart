@@ -22,7 +22,7 @@ class GroupListState extends State<GroupList> {
     super.initState();
     fetchGroups();
   }
-
+/*
   Future<void> fetchGroups() async {
     try {
       CollectionReference groupCollection =
@@ -42,6 +42,32 @@ class GroupListState extends State<GroupList> {
     } catch (e) {
       print("그룹 데이터를 가져오는 중 오류 발생: $e");
     }
+  }
+*/
+
+  // Firestore에서 실시간 데이터를 가져오는 메서드
+  void fetchGroups() {
+    // Firestore의 'group' 컬렉션 참조
+    CollectionReference groupCollection =
+        FirebaseFirestore.instance.collection('group');
+
+    // 실시간 데이터 스트림을 구독
+    groupCollection.snapshots().listen((snapshot) {
+      // 데이터를 List<Map<String, dynamic>>로 변환
+      List<Map<String, dynamic>> fetchedGroups = snapshot.docs.map((doc) {
+        return {
+          'id': doc.id, // 문서 ID
+          'data': doc.data(), // 문서의 모든 필드
+        };
+      }).toList();
+
+      // 상태 업데이트
+      setState(() {
+        groups = fetchedGroups;
+      });
+    }, onError: (e) {
+      print("그룹 데이터를 가져오는 중 오류 발생: $e");
+    });
   }
 
   @override
@@ -146,8 +172,6 @@ class GroupCard extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (context) => GroupChat(
                     meetingName: groupName,
-                    schedule: schedule,
-                    user: users,
                     groupId: groupId,
                   ),
                 ),
