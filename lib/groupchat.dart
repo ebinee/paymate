@@ -43,6 +43,8 @@ class GroupChatState extends State<GroupChat> {
 List<Map<String, dynamic>> groupuser=[];
 List<Map<String, dynamic>> schedule=[];
 
+ bool isCompeleted = false; //정산이 완료되었는가? 버튼
+
   @override
   void initState() {
     super.initState();
@@ -66,6 +68,7 @@ Future<void> fetchGroupUsers() async {
           return {
             'id': user['id'],
             'name': user['name'],
+            'amount':(!user.containsKey('amount'))?0:user['amount'],
           };
         }).toList();
 
@@ -82,41 +85,6 @@ Future<void> fetchGroupUsers() async {
   }
 }
 
-// 특정 groupId에 해당하는 그룹의 schedule 필드를 실시간으로 가져오는 메서드
-/*Future<void> fetchSchedule() async {
-  try {
-    String groupId = widget.groupId;
-    
-    FirebaseFirestore.instance
-        .collection('group')
-        .doc(groupId)
-        .snapshots() // snapshots() 사용하여 실시간 데이터 수신
-        .listen((groupDoc) {
-      if (groupDoc.exists) {
-        List<dynamic> groupSchedule = groupDoc['schedule'];
-        List<Map<String, dynamic>> fetchedSchedule = groupSchedule.map((schedule) {
-          return {
-            'category': schedule['category'],
-            'money': schedule['money'],
-            'scheduleCreator': schedule['scheduleCreator'],
-            'scheduleDate': schedule['scheduleDate'],
-            'schedule_user': schedule['schedule_user'],
-            'title': schedule['title'],
-          };
-        }).toList();
-        
-        setState(() {
-          schedule = fetchedSchedule;
-        });
-      } else {
-        print("Group not found");
-      }
-    });
-  } catch (e) {
-    print("Error fetching schedule: $e");
-  }
-}
-*/
 
 void fetchSchedule() {
   String groupId = widget.groupId;
@@ -140,12 +108,12 @@ void fetchSchedule() {
 
   @override
   Widget build(BuildContext context) {
-    for (var user in groupuser) {
+ /*   for (var user in groupuser) {
       if (!user.containsKey('amount')) {
         user['amount'] = 0;  // amount 필드가 없으면 추가하고 0으로 초기화
       }
     }
-
+*/
 
     return Scaffold(
       appBar: Header(headerTitle: widget.meetingName),
@@ -183,7 +151,8 @@ void fetchSchedule() {
                           Text(
 profile['amount'] <= 0
     ? (profile['id'] == 'User1' ? '' : '${profile['amount']}원')
-    : '+ ${profile['amount']}원',                            style: const TextStyle(
+    : '+ ${profile['amount']}원',                            
+    style: const TextStyle(
                               fontSize: 12.0,
                             ),
                           ),
@@ -204,6 +173,10 @@ profile['amount'] <= 0
                   padding: const EdgeInsets.only(bottom: 20.0),
                   child: Row(
                   children: [
+                    Container(
+                    width: 2, // 선 두께
+                    color: Colors.grey.shade300, // 선 색상
+                  ),
                     // 분홍색 원형 아이콘
                     Container(
                       width: 50,
@@ -219,14 +192,17 @@ profile['amount'] <= 0
                     ),
                     const SizedBox(width: 10),
 
-                    Expanded(
+                   Expanded(
   child: Padding(
     padding: const EdgeInsets.symmetric(vertical: 8.0), // Add vertical padding
     child: Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15), // Rounded corners for the card
       ),
-      color: Colors.white,
+      color: (scheduleItem['schedule_user'] ?? [])
+              .any((friend) => friend['id'] == 'User1') // Check if User1 is included
+          ? Color(0xFFFFB2A5).withOpacity(0.2) // Highlight color if User1 is included
+          : Colors.white, // Default color
       elevation: 5, // Shadow effect for elevation
       shadowColor: Colors.grey.withOpacity(0.5), // Light shadow
       child: ListTile(
@@ -279,7 +255,7 @@ profile['amount'] <= 0
             ),
             const SizedBox(height: 8),
             Text(
-              '${scheduleItem['money']}원',
+              '₩ ${scheduleItem['money']}',
               textAlign: TextAlign.right,
               style: const TextStyle(
                 fontSize: 16,
@@ -293,6 +269,7 @@ profile['amount'] <= 0
     ),
   ),
 )
+
                   ]
                   ),
                 );
@@ -320,6 +297,33 @@ profile['amount'] <= 0
   shape: const CircleBorder(),
   child: const Icon(Icons.add),
 ),
-    );
-  }
+    bottomNavigationBar: schedule.isNotEmpty
+        ? Padding(
+            padding: const EdgeInsets.only(bottom: 16.0, left: 40.0, right: 40.0), // 아래쪽 여백만 조정하고 양옆 여백도 추가
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  isCompeleted = !isCompeleted;
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isCompeleted ? Colors.grey[600] : const Color(0xFFFFB2A5), // 상태에 따라 색 변경
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20), // 둥근 모서리
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: Text(
+                isCompeleted ? '정산 완료' : '정산완료하기', // 상태에 따라 텍스트 변경
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: isCompeleted ? Colors.white : Color(0xFF646464),
+                ),
+              ),
+            ),
+          )
+        : null, // schedule이 비어있으면 버튼을 표시하지 않음
+  );
 }
+  }

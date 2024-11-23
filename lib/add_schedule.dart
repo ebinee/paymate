@@ -302,7 +302,10 @@ class AddScheduleState extends State<AddSchedule> {
 
             // 그룹 문서의 schedule 필드 업데이트
             await groupDoc.update({'schedule': existingSchedule});
+
+            
 if(mounted){
+
       Navigator.pop(context);
 }}
 catch(e){
