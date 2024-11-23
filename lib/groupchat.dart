@@ -50,14 +50,18 @@ List<Map<String, dynamic>> schedule=[];
     fetchSchedule();         
   }
 
-  // 특정 groupId에 해당하는 그룹의 user 필드를 가져오는 메서드
-  Future<void> fetchGroupUsers() async {
-    try {
-      String groupId = widget.groupId; 
-      DocumentSnapshot groupDoc = await FirebaseFirestore.instance.collection('group').doc(groupId).get();
-
+// 특정 groupId에 해당하는 그룹의 user 필드를 실시간으로 가져오는 메서드
+Future<void> fetchGroupUsers() async {
+  try {
+    String groupId = widget.groupId;
+    
+    FirebaseFirestore.instance
+        .collection('group')
+        .doc(groupId)
+        .snapshots() // snapshots() 사용하여 실시간 데이터 수신
+        .listen((groupDoc) {
       if (groupDoc.exists) {
-        List<dynamic> users = groupDoc['user']; 
+        List<dynamic> users = groupDoc['user'];
         List<Map<String, dynamic>> fetchedGroupUsers = users.map((user) {
           return {
             'id': user['id'],
@@ -72,40 +76,66 @@ List<Map<String, dynamic>> schedule=[];
       } else {
         print('Group not found');
       }
-    } catch (e) {
-      print('그룹 데이터를 가져오는 중 오류 발생: $e');
-    }
+    });
+  } catch (e) {
+    print('그룹 데이터를 가져오는 중 오류 발생: $e');
   }
+}
 
-Future<void> fetchSchedule() async {
+// 특정 groupId에 해당하는 그룹의 schedule 필드를 실시간으로 가져오는 메서드
+/*Future<void> fetchSchedule() async {
   try {
     String groupId = widget.groupId;
-
-    // groupId로 그룹을 찾아 schedule 필드를 가져옵니다.
-      DocumentSnapshot groupDoc = await FirebaseFirestore.instance.collection('group').doc(groupId).get();
-
-    // 문서가 존재하는지 확인
-    if (groupDoc.exists) {
-      // schedule 필드를 가져옵니다.
+    
+    FirebaseFirestore.instance
+        .collection('group')
+        .doc(groupId)
+        .snapshots() // snapshots() 사용하여 실시간 데이터 수신
+        .listen((groupDoc) {
+      if (groupDoc.exists) {
         List<dynamic> groupSchedule = groupDoc['schedule'];
         List<Map<String, dynamic>> fetchedSchedule = groupSchedule.map((schedule) {
           return {
-          'category': schedule['category'],
-          'money': schedule['money'],
-          'scheduleCreator': schedule['scheduleCreator'],
-          'scheduleDate':schedule['scheduleDate'],
-          'schedule_user': schedule['schedule_user'],
-          'title': schedule['title'],
+            'category': schedule['category'],
+            'money': schedule['money'],
+            'scheduleCreator': schedule['scheduleCreator'],
+            'scheduleDate': schedule['scheduleDate'],
+            'schedule_user': schedule['schedule_user'],
+            'title': schedule['title'],
           };
         }).toList();
+        
         setState(() {
           schedule = fetchedSchedule;
-    });} else {
-      print("Group not found");
-    }
+        });
+      } else {
+        print("Group not found");
+      }
+    });
   } catch (e) {
     print("Error fetching schedule: $e");
   }
+}
+*/
+
+void fetchSchedule() {
+  String groupId = widget.groupId;
+
+  // Fetch the group document from Firestore
+  var scheduleCollection = FirebaseFirestore.instance.collection('group').doc(groupId);
+
+  scheduleCollection.snapshots().listen((snapshot) {
+    if (snapshot.exists) {
+      // Assuming the document contains a field named 'schedule' which is a list of maps
+      List<Map<String, dynamic>> fetchedSchedule = List<Map<String, dynamic>>.from(snapshot.data()?['schedule'] ?? []);
+
+      setState(() {
+        schedule = fetchedSchedule;
+      });
+    } else {
+      print("Group not found");
+    }
+  });
 }
 
   @override
