@@ -18,8 +18,6 @@ void main() async {
 }
 
 class App extends StatefulWidget {
-  //final User user; // Variable to accept data
-
   const App({super.key});
 
   @override
