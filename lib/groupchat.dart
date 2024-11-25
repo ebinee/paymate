@@ -52,14 +52,14 @@ double calculateTotalAmount(String userUid, List<Map<String,dynamic>> schedules)
     // schedule_user에서 해당 userId가 포함된 경우만 계산
     final users = schedule['schedule_user'] ?? [];
     final creatorUid = schedule['Creator']?['Uid'];
-        if((users.any((user) => user['Uid'] == user?.uid))){
-    if (users.any((user) => user['Uid'] == userUid)) {
+        if((users.any((scheduleuser) => scheduleuser['Uid'] == widget.user?.uid))){
+    if (users.any((scheduleuser) => scheduleuser['Uid'] == userUid)) {
             final amount = schedule['money'] ?? 0;
 
       if(userUid==creatorUid){
         totalAmount -= (amount / users.length);
       }
-      else if(creatorUid==user?.uid){
+      else if(creatorUid==widget.user?.uid){
       totalAmount += (amount / users.length); // 금액을 사용자 수로 나눔
       }
     }
@@ -70,7 +70,8 @@ double calculateTotalAmount(String userUid, List<Map<String,dynamic>> schedules)
 
 List<Map<String, dynamic>> groupuser=[];
 List<Map<String, dynamic>> schedule=[];
-User? user = FirebaseAuth.instance.currentUser;
+//User? user = FirebaseAuth.instance.currentUser;
+User? _user;
 
 bool isCompeleted = false; //정산이 완료되었는가? 버튼
 
@@ -78,7 +79,9 @@ bool isCompeleted = false; //정산이 완료되었는가? 버튼
   void initState() {
     super.initState();
     fetchGroupUsers(); 
-    fetchSchedule();         
+    fetchSchedule();
+        _user = widget.user;
+         
   }
 
 // 특정 groupId에 해당하는 그룹의 user 필드를 실시간으로 가져오는 메서드
@@ -93,10 +96,10 @@ Future<void> fetchGroupUsers() async {
         .listen((groupDoc) {
       if (groupDoc.exists) {
         List<dynamic> users = groupDoc['members'];
-        List<Map<String, dynamic>> fetchedGroupUsers = users.map((user) {
+        List<Map<String, dynamic>> fetchedGroupUsers = users.map((_groupuser) {
           return {
-            'Uid': user['Uid'],
-            'name': user['name'],
+            'Uid': _groupuser['Uid'],
+            'name': _groupuser['name'],
           };
         }).toList();
 
@@ -152,7 +155,7 @@ if (groupuser.isNotEmpty)
     child: Row(
       children: [
         ...groupuser
-            .where((profile) => profile['Uid'] == user?.uid) // "나"에 해당하는 프로필 먼저 필터링
+            .where((profile) => profile['Uid'] == _user?.uid) // "나"에 해당하는 프로필 먼저 필터링
             .map((profile) {
           return const Padding(
             padding: EdgeInsets.symmetric(horizontal: 8.0),
@@ -183,7 +186,7 @@ if (groupuser.isNotEmpty)
           );
         }),
         ...groupuser
-            .where((profile) => profile['Uid'] != user?.uid) // 나머지 프로필
+            .where((profile) => profile['Uid'] != _user?.uid) // 나머지 프로필
             .map((profile) {
             final userTotalAmount = calculateTotalAmount(profile['Uid'], schedule);
 
@@ -252,7 +255,7 @@ if (groupuser.isNotEmpty)
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: (scheduleItem['schedule_user'] ?? [])
-              .any((friend) => friend['Uid'] == user?.uid) // Check if User1 is included
+              .any((friend) => friend['Uid'] == _user?.uid) // Check if User1 is included
           ?const Color(0x00ffb2a5).withOpacity(0.2)//.withOpacity(0.2) // Highlight color if User1 is included
           : Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -272,7 +275,7 @@ if (groupuser.isNotEmpty)
               Text(
           scheduleItem['title'], // Event title
           style: const TextStyle(
-            fontSize: 8,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Color(0xFF646464),
           ),
@@ -282,8 +285,8 @@ if (groupuser.isNotEmpty)
           children: (() {
     List scheduleUsers = (scheduleItem['schedule_user'] ?? []);
     scheduleUsers.sort((a, b) {
-      if (a['Uid'] == user?.uid) return -1; // '나'를 첫 번째로
-      if (b['Uid'] == user?.uid) return 1;
+      if (a['Uid'] == _user?.uid) return -1; // '나'를 첫 번째로
+      if (b['Uid'] == _user?.uid) return 1;
       return 0;
     });
 
@@ -300,7 +303,7 @@ if (groupuser.isNotEmpty)
               child: Center(
                 child: Text(
                   name.isNotEmpty
-                      ? (friend['Uid'] == user?.uid ? '나' : name[0])
+                      ? (friend['Uid'] == _user?.uid ? '나' : name[0])
                       : ' ', // Display the first letter of the name or '나'
                   style: const TextStyle(
                     fontSize: 12,
@@ -318,7 +321,7 @@ if (groupuser.isNotEmpty)
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              scheduleItem['Creator']['Uid'] == user?.uid
+              scheduleItem['Creator']['Uid'] == _user?.uid
                   ? '나'
                   : scheduleItem['Creator']['name'],
               style: const TextStyle(
@@ -362,7 +365,7 @@ if (groupuser.isNotEmpty)
       MaterialPageRoute(
         builder: (context) => AddSchedule(
           groupId:widget.groupId,
-          user:user,
+          user:_user,
           ),
       ),
     );

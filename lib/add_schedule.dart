@@ -10,11 +10,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class AddSchedule extends StatefulWidget {
   final String groupId;
+  final User? user;
   
 
   const AddSchedule({
     super.key, 
     required this.groupId,
+    required this.user,
     });
 
   @override
@@ -26,9 +28,9 @@ class AddScheduleState extends State<AddSchedule> {
   final TextEditingController _amountController = TextEditingController();
   String? _selectedCategory;
   List<Map<String,dynamic>> groupuser = [];
-
+  User?_user;
   List<Map<String,dynamic>> scheduleUser = [];
-  User? user = FirebaseAuth.instance.currentUser;
+//  User? user = FirebaseAuth.instance.currentUser;
   final List<String> _categories = [
     '식비',
     '카페/간식',
@@ -50,6 +52,7 @@ class AddScheduleState extends State<AddSchedule> {
   void initState() {
     super.initState();
     fetchGroupUsers(); 
+    _user=widget.user;
   }
 
 // 특정 groupId에 해당하는 그룹의 user 필드를 실시간으로 가져오는 메서드
@@ -267,15 +270,15 @@ Future<void> fetchGroupUsers() async {
                         itemBuilder: (context, index) {
                               final sortedGroupUser = List.from(groupuser); // 원본 데이터를 복사하여 정렬
     sortedGroupUser.sort((a, b) {
-      if (a['Uid'] == "StCp4HEIvbOlumOf7P0KinSHjCx1") return -1; // '나'를 첫 번째로
-      if (b['Uid'] == "StCp4HEIvbOlumOf7P0KinSHjCx1") return 1;
+      if (a['Uid'] == _user?.uid) return -1; // '나'를 첫 번째로
+      if (b['Uid'] == _user?.uid) return 1;
       return 0;
     });
                           final friend = sortedGroupUser[index];
                           final isSelected = scheduleUser.contains(friend);
                           return CheckboxListTile(
                             title: Text(
-                              friend['Uid']=="StCp4HEIvbOlumOf7P0KinSHjCx1"?'나':friend['name'],
+                              friend['Uid']==(_user?.uid) ?'나':friend['name'],
                               ),
                             value: isSelected,
                             activeColor: const Color(0xFFFFB2A5),
@@ -307,7 +310,7 @@ Future<void> fetchGroupUsers() async {
             // 새로운 스케줄 데이터 생성
             final newSchedule = {
               'category': _selectedCategory!,
-              'Creator':{'Uid':"StCp4HEIvbOlumOf7P0KinSHjCx1",'name':'이수민' },
+              'Creator':{'Uid':_user?.uid,'name':'이수민' },
               'money': int.parse(_amountController.text), // 금액은 숫자로 저장
               'scheduleDate': Timestamp.now(), // 생성 시간
               'schedule_user': scheduleUser, // 선택된 친구 목록

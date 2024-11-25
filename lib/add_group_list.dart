@@ -275,6 +275,7 @@ class _AddGroupList extends State<AddGroupList> {
                               builder: (context) => GroupChat(
                                 meetingName: meetingName,
                                 groupId: groupId,
+                                user:_user,
                               ),
                             ),
                           );

@@ -170,7 +170,7 @@ class GroupListState extends State<GroupList> {
                             }).toList()
                           : <String>[],
                       groupId: groups[index]['id'],
-                      user:widget.user,
+                      user: _user,
                     ),
                   );
                 },
