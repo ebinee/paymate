@@ -28,6 +28,7 @@ class App extends StatefulWidget {
 }
 
 class _Appstate extends State<App> {
+  User? user = FirebaseAuth.instance.currentUser;
   Future<Map<int, int>>? _monthlyExpense;
 
   @override
@@ -368,7 +369,9 @@ class _Appstate extends State<App> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const GroupList()));
+                          builder: (context) => GroupList(
+                                user: user,
+                              )));
                 },
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.black54,
