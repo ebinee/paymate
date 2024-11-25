@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:paymate/header.dart';
-import 'package:paymate/sign_in.dart';
 
 class enquiry extends StatefulWidget {
   const enquiry({super.key});
@@ -101,10 +100,10 @@ class _enquiryState extends State<enquiry> {
                     height: 20,
                   ),
                   const Align(
-                    alignment: Alignment.centerLeft, // 왼쪽 정렬
+                    alignment: Alignment.centerLeft,
                     child: Text(
                       "문의내용",
-                      textAlign: TextAlign.left, // 텍스트 내부 정렬
+                      textAlign: TextAlign.left,
                     ),
                   ),
                   const SizedBox(
@@ -114,13 +113,13 @@ class _enquiryState extends State<enquiry> {
                     children: [
                       Expanded(
                         child: SizedBox(
-                          height: 300, // TextField의 높이
+                          height: 300,
                           child: TextField(
                             decoration: InputDecoration(
                               border: OutlineInputBorder(),
                               contentPadding: EdgeInsets.symmetric(
-                                vertical: 180, // 내부 여백 (위, 아래)
-                                horizontal: 10, // 내부 여백 (양옆)
+                                vertical: 180,
+                                horizontal: 10,
                               ),
                             ),
                           ),
@@ -132,23 +131,20 @@ class _enquiryState extends State<enquiry> {
                     height: 10,
                   ),
                   Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment.center, // 버튼을 화면 중앙에 배치
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // '취소' 버튼
                       TextButton(
                         onPressed: () {
                           Navigator.pop(context);
                         },
                         style: TextButton.styleFrom(
                           foregroundColor: Colors.red,
-                          backgroundColor: Colors.white, // 버튼 배경색
-                          side: const BorderSide(color: Colors.red), // 테두리 색
+                          backgroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.red),
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 30, vertical: 15), // 글씨 색
+                              horizontal: 30, vertical: 15),
                           shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(8), // 버튼 모서리 둥글게
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
                         child: const Text(
@@ -156,8 +152,7 @@ class _enquiryState extends State<enquiry> {
                           style: TextStyle(fontSize: 16),
                         ),
                       ),
-                      const SizedBox(width: 20), // 버튼 사이 간격
-                      // '접수' 버튼
+                      const SizedBox(width: 20),
                       TextButton(
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -168,12 +163,11 @@ class _enquiryState extends State<enquiry> {
                         },
                         style: TextButton.styleFrom(
                           foregroundColor: Colors.white,
-                          backgroundColor: Colors.red, // 버튼 배경색
+                          backgroundColor: Colors.red,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 30, vertical: 15), // 글씨 색
+                              horizontal: 30, vertical: 15),
                           shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(8), // 버튼 모서리 둥글게
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
                         child: const Text(

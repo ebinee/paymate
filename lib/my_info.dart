@@ -22,6 +22,78 @@ class _MyInfoState extends State<MyInfo> {
     _fetchData();
   }
 
+  void _showDeleteConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xffffffff),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          titlePadding: EdgeInsets.zero,
+          title: const Padding(
+            padding: EdgeInsets.all(20),
+            child: Text(
+              '회원탈퇴',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Color(0xff646464),
+                fontSize: 20,
+              ),
+            ),
+          ),
+          content: const Text(
+            '정말 회원탈퇴 하시겠습니까 ?',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xff646464),
+              fontSize: 20,
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xffffffff),
+                backgroundColor: const Color(0xff646464),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 50, vertical: 12),
+                textStyle: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w100,
+                ),
+              ),
+              child: const Text('취소'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xffffffff),
+                backgroundColor: const Color(0xff646464),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 50, vertical: 12),
+                textStyle: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w100,
+                ),
+              ),
+              child: const Text('탈퇴'),
+              onPressed: () {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SignIn()),
+                  (route) => false,
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _fetchData() async {
     User? user = FirebaseAuth.instance.currentUser;
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -108,7 +180,7 @@ class _MyInfoState extends State<MyInfo> {
                         ),
                         const Divider(
                           color: Color(0xFFF2E8DA),
-                          thickness: 1.5, // 선 두께
+                          thickness: 1.5,
                           indent: 0,
                           endIndent: 0,
                         ),
@@ -200,7 +272,7 @@ class _MyInfoState extends State<MyInfo> {
                         ),
                         const Divider(
                           color: Color(0xFFF2E8DA),
-                          thickness: 1.5, // 선 두께
+                          thickness: 1.5,
                           indent: 0,
                           endIndent: 0,
                         ),
@@ -273,16 +345,26 @@ class _MyInfoState extends State<MyInfo> {
                           ),
                         ]),
                         const SizedBox(
-                          height: 8,
+                          height: 0,
                         ),
-                        const Row(children: [
-                          SizedBox(
+                        Row(children: [
+                          const SizedBox(
                             width: 25,
                           ),
-                          Text(
-                            "회원탈퇴",
-                            style: TextStyle(
-                              fontSize: 18,
+                          TextButton(
+                            onPressed: () {
+                              _showDeleteConfirmationDialog();
+                            },
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                            ),
+                            child: const Text(
+                              '회원탈퇴',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w100,
+                                fontSize: 18,
+                              ),
                             ),
                           ),
                         ]),
@@ -291,7 +373,7 @@ class _MyInfoState extends State<MyInfo> {
                         ),
                         const Divider(
                           color: Color(0xFFF2E8DA),
-                          thickness: 1.5, // 선 두께
+                          thickness: 1.5,
                           indent: 0,
                           endIndent: 0,
                         ),

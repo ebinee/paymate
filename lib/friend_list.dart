@@ -433,7 +433,7 @@ class FriendListState extends State<FriendList> {
                             ),
                             const Spacer(),
                             Align(
-                              alignment: Alignment.centerRight, // 오른쪽 정렬
+                              alignment: Alignment.centerRight,
                               child: IconButton(
                                 icon: const Icon(Icons.delete,
                                     color: Colors.grey),
