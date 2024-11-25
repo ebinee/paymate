@@ -5,7 +5,7 @@ import 'package:paymate/group_list.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:paymate/my_page.dart';
+import 'package:paymate/my_info.dart';
 import 'package:paymate/sign_in.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -233,7 +233,7 @@ class _Appstate extends State<App> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const MyPage()),
+                        MaterialPageRoute(builder: (context) => const MyInfo()),
                       );
                     },
                     child: const Icon(
