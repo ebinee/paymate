@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-//import 'package:paymate/main.dart';
 import 'package:paymate/header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-//import 'package:intl/intl.dart';
-//import 'group_list.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 
@@ -30,7 +27,6 @@ class AddScheduleState extends State<AddSchedule> {
   List<Map<String,dynamic>> groupuser = [];
   User?_user;
   List<Map<String,dynamic>> scheduleUser = [];
-//  User? user = FirebaseAuth.instance.currentUser;
   final List<String> _categories = [
     '식비',
     '카페/간식',
@@ -55,7 +51,6 @@ class AddScheduleState extends State<AddSchedule> {
     _user=widget.user;
   }
 
-// 특정 groupId에 해당하는 그룹의 user 필드를 실시간으로 가져오는 메서드
 Future<void> fetchGroupUsers() async {
   try {
     String groupId = widget.groupId;
@@ -63,7 +58,7 @@ Future<void> fetchGroupUsers() async {
     FirebaseFirestore.instance
         .collection('group')
         .doc(groupId)
-        .snapshots() // snapshots() 사용하여 실시간 데이터 수신
+        .snapshots() 
         .listen((groupDoc) {
       if (groupDoc.exists) {
         List<dynamic> users = groupDoc['members'];
@@ -74,7 +69,6 @@ Future<void> fetchGroupUsers() async {
           };
         }).toList();
 
-        // 상태 업데이트
         setState(() {
           groupuser = fetchedGroupUsers;
         });
@@ -268,7 +262,7 @@ Future<void> fetchGroupUsers() async {
                       child: ListView.builder(
                         itemCount: groupuser.length,
                         itemBuilder: (context, index) {
-                              final sortedGroupUser = List.from(groupuser); // 원본 데이터를 복사하여 정렬
+                              final sortedGroupUser = List.from(groupuser); 
     sortedGroupUser.sort((a, b) {
       if (a['Uid'] == _user?.uid) return -1; // '나'를 첫 번째로
       if (b['Uid'] == _user?.uid) return 1;
@@ -324,7 +318,6 @@ if(mounted){
       Navigator.pop(context);
 }}
 catch(e){
-                        // 에러 핸들링 (예: 스낵바로 에러 메시지 표시)
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('스케쥴 생성 실패: $e')),

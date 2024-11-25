@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:paymate/header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -55,56 +54,10 @@ class GroupListState extends State<GroupList> {
             'data': doc.data() as Map<String, dynamic>,
           };
         }).toList();
-        // print('userUID: ${_user?.uid}');
       });
     } catch (e) {
       print("그룹 데이터를 가져오는 중 오류 발생: $e");
     }
-    /*
-    // Firestore의 'group' 컬렉션 참조
-    CollectionReference groupCollection =
-        FirebaseFirestore.instance.collection('group');
-
-    // 실시간 데이터 스트림을 구독
-    groupCollection.snapshots().listen((snapshot) {
-      // 데이터를 List<Map<String, dynamic>>로 변환
-      List<Map<String, dynamic>> fetchedGroups = []; // 임시 리스트
-
-      // 모든 문서를 순회하며 처리
-      for (var doc in snapshot.docs) {
-        // 문서 데이터를 가져옴
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-
-        // members 필드가 List<dynamic>인지 확인
-        if (data['members'] != null && data['members'] is List<dynamic>) {
-          List<String> membersList = (data['members'] as List<dynamic>)
-              .map<String>(
-                  (member) => (member as Map<String, dynamic>)['uid'] as String)
-              .toList(); // List<String>으로 변환
-
-          // user?.uid와 같은 값이 있는지 확인
-          if (membersList.contains('${user?.uid}')) {
-            // 조건을 만족하면 그룹 데이터를 추가
-            fetchedGroups.add({
-              'id': doc.id,
-              'data': data,
-            });
-
-            // 조건을 만족했으므로 반복 종료
-            break;
-          }
-        }
-        
-      }
-
-      // 상태 업데이트
-      setState(() {
-        groups = fetchedGroups;
-      });
-    }, onError: (e) {
-      print("그룹 데이터를 가져오는 중 오류 발생: $e");
-    });
-    */
   }
 
   @override
@@ -115,7 +68,6 @@ class GroupListState extends State<GroupList> {
       body: SingleChildScrollView(
           padding: const EdgeInsets.all(30.0),
           child: Column(
-            //crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               GestureDetector(
                 onTap: () {
@@ -212,12 +164,6 @@ class GroupCard extends StatelessWidget {
           if (docSnapshot.exists) {
             final data = docSnapshot.data();
             if (data != null) {
-              /*
-              List<Map<String, dynamic>> users =
-                  List<Map<String, dynamic>>.from(data['user'] ?? []);
-              List<Map<String, dynamic>> schedule =
-                  List<Map<String, dynamic>>.from(data['schedule'] ?? []);*/
-
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -265,7 +211,6 @@ class GroupCard extends StatelessWidget {
               const SizedBox(height: 8.0),
               Text(
                 ' ${friends.join(', ')}',
-                //"User",
                 style: const TextStyle(
                   fontSize: 12,
                   color: Color(0xFF646464),

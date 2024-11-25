@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
-//import 'package:flutter/widgets.dart';
-//import 'package:paymate/main.dart';
 import 'package:paymate/header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-//import 'package:intl/intl.dart';
-//import 'group_list.dart';
 import 'package:paymate/add_schedule.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 
 
 class GroupChat extends StatefulWidget {
-  final String meetingName; // 모임 이름
+  final String meetingName; 
   final String groupId;
   final User? user;
 
@@ -60,7 +56,7 @@ double calculateTotalAmount(String userUid, List<Map<String,dynamic>> schedules)
         totalAmount -= (amount / users.length);
       }
       else if(creatorUid==widget.user?.uid){
-      totalAmount += (amount / users.length); // 금액을 사용자 수로 나눔
+      totalAmount += (amount / users.length); 
       }
     }
   }
@@ -70,10 +66,9 @@ double calculateTotalAmount(String userUid, List<Map<String,dynamic>> schedules)
 
 List<Map<String, dynamic>> groupuser=[];
 List<Map<String, dynamic>> schedule=[];
-//User? user = FirebaseAuth.instance.currentUser;
 User? _user;
 
-bool isCompeleted = false; //정산이 완료되었는가? 버튼
+bool isCompeleted = false;
 
   @override
   void initState() {
@@ -84,7 +79,6 @@ bool isCompeleted = false; //정산이 완료되었는가? 버튼
          
   }
 
-// 특정 groupId에 해당하는 그룹의 user 필드를 실시간으로 가져오는 메서드
 Future<void> fetchGroupUsers() async {
   try {
     String groupId = widget.groupId;
@@ -92,7 +86,7 @@ Future<void> fetchGroupUsers() async {
     FirebaseFirestore.instance
         .collection('group')
         .doc(groupId)
-        .snapshots() // snapshots() 사용하여 실시간 데이터 수신
+        .snapshots() 
         .listen((groupDoc) {
       if (groupDoc.exists) {
         List<dynamic> users = groupDoc['members'];
@@ -103,7 +97,6 @@ Future<void> fetchGroupUsers() async {
           };
         }).toList();
 
-        // 상태 업데이트
         setState(() {
           groupuser = fetchedGroupUsers;
         });
@@ -120,12 +113,10 @@ Future<void> fetchGroupUsers() async {
 void fetchSchedule() {
   String groupId = widget.groupId;
 
-  // Fetch the group document from Firestore
   var scheduleCollection = FirebaseFirestore.instance.collection('group').doc(groupId);
 
   scheduleCollection.snapshots().listen((snapshot) {
     if (snapshot.exists) {
-      // Assuming the document contains a field named 'schedule' which is a list of maps
       List<Map<String, dynamic>> fetchedSchedule = List<Map<String, dynamic>>.from(snapshot.data()?['schedule'] ?? []);
 
       setState(() {
@@ -162,13 +153,13 @@ if (groupuser.isNotEmpty)
             child: Column(
               children: [
                 Icon(
-                  Icons.person, // 아이콘으로 대체
+                  Icons.person, 
                   size: 40,
                   color: Colors.grey,
                 ),
                 SizedBox(height: 4),
                 Text(
-                  '나', // "나" 표시
+                  '나', 
                   style: TextStyle(
                     fontSize: 12.0,
                   ),
@@ -186,7 +177,7 @@ if (groupuser.isNotEmpty)
           );
         }),
         ...groupuser
-            .where((profile) => profile['Uid'] != _user?.uid) // 나머지 프로필
+            .where((profile) => profile['Uid'] != _user?.uid) 
             .map((profile) {
             final userTotalAmount = calculateTotalAmount(profile['Uid'], schedule);
 
@@ -195,7 +186,7 @@ if (groupuser.isNotEmpty)
             child: Column(
               children: [
                 const Icon(
-                  Icons.person, // 아이콘으로 대체
+                  Icons.person, 
                   size: 40,
                   color: Colors.grey,
                 ),
@@ -249,14 +240,14 @@ if (groupuser.isNotEmpty)
 
                    Expanded(
   child: Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8.0), // Add vertical padding
+    padding: const EdgeInsets.symmetric(vertical: 8.0), 
         child: Container(
         margin: const EdgeInsets.only(right: 30),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: (scheduleItem['schedule_user'] ?? [])
-              .any((friend) => friend['Uid'] == _user?.uid) // Check if User1 is included
-          ?const Color(0x00ffb2a5).withOpacity(0.2)//.withOpacity(0.2) // Highlight color if User1 is included
+              .any((friend) => friend['Uid'] == _user?.uid) 
+          ?const Color(0x00ffb2a5).withOpacity(0.2)
           : Colors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
@@ -273,7 +264,7 @@ if (groupuser.isNotEmpty)
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-          scheduleItem['title'], // Event title
+          scheduleItem['title'], 
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -298,13 +289,13 @@ if (groupuser.isNotEmpty)
               height: 30,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                color: Color(0xFFC1C1C1), // Light grey background for avatar
+                color: Color(0xFFC1C1C1),
               ),
               child: Center(
                 child: Text(
                   name.isNotEmpty
                       ? (friend['Uid'] == _user?.uid ? '나' : name[0])
-                      : ' ', // Display the first letter of the name or '나'
+                      : ' ', 
                   style: const TextStyle(
                     fontSize: 12,
                     color: Colors.white,
@@ -387,7 +378,7 @@ if (groupuser.isNotEmpty)
               style: ElevatedButton.styleFrom(
                 backgroundColor: isCompeleted ? Colors.grey[600] : const Color(0xFFFFB2A5), // 상태에 따라 색 변경
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20), // 둥근 모서리
+                  borderRadius: BorderRadius.circular(20), 
                 ),
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
