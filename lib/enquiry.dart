@@ -40,230 +40,149 @@ class _enquiryState extends State<enquiry> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: const Header(
-          headerTitle: "내 정보",
+          headerTitle: "문의하기",
         ),
         backgroundColor: Colors.white,
         body: SingleChildScrollView(
             child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 15,
-          ),
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(
-                  height: 20,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 15,
                 ),
-                Row(children: [
-                  const Padding(padding: EdgeInsets.only(left: 35)),
-                  const Icon(
-                    Icons.person,
-                    size: 100,
-                    color: Colors.grey,
-                  ),
+                child: Column(children: [
                   const SizedBox(
-                    width: 20,
+                    height: 10,
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const Row(
                     children: [
-                      const SizedBox(height: 5),
-                      Text(userName, style: const TextStyle(fontSize: 40)),
-                      const SizedBox(height: 5),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 7.0),
-                        child: Text('ID : $userId',
-                            style: const TextStyle(fontSize: 18)),
+                      Text("이름"),
+                      SizedBox(width: 39),
+                      Expanded(
+                        child: TextField(
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
                       ),
-                      const SizedBox(height: 10),
                     ],
                   ),
-                ]),
-                const SizedBox(
-                  height: 20,
-                ),
-                const Divider(
-                  color: Color(0xFFF2E8DA),
-                  thickness: 1, // 선 두께
-                  indent: 20,
-                  endIndent: 20,
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                const Row(
-                  children: [
-                    SizedBox(
-                      width: 25,
-                    ),
-                    Text(
-                      "계정",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  children: [
-                    const SizedBox(
-                      width: 25,
-                    ),
-                    const Text(
-                      "아이디",
-                      style: TextStyle(
-                        fontSize: 18,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      userId,
-                      style: const TextStyle(fontSize: 18, color: Colors.grey),
-                    ),
-                    const SizedBox(
-                      width: 25,
-                    )
-                  ],
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                const Row(children: [
-                  SizedBox(
-                    width: 25,
-                  ),
-                  Text(
-                    "비밀번호 변경",
-                    style: TextStyle(
-                      fontSize: 18,
-                    ),
-                  ),
-                ]),
-                const SizedBox(
-                  height: 8,
-                ),
-                Row(children: [
                   const SizedBox(
-                    width: 25,
+                    height: 10,
                   ),
-                  TextButton(
-                    onPressed: () {
-                      FirebaseAuth.instance.signOut();
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (context) => const SignIn()),
-                        (route) => false,
-                      );
-                    },
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                    ),
-                    child: const Text(
-                      '로그아웃',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w100,
-                        fontSize: 18,
+                  const Row(
+                    children: [
+                      Text("이메일"),
+                      SizedBox(width: 26),
+                      Expanded(
+                        child: TextField(
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
                       ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const Row(
+                    children: [
+                      Text("문의제목"),
+                      SizedBox(width: 13),
+                      Expanded(
+                        child: TextField(
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  const Align(
+                    alignment: Alignment.centerLeft, // 왼쪽 정렬
+                    child: Text(
+                      "문의내용",
+                      textAlign: TextAlign.left, // 텍스트 내부 정렬
                     ),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 300, // TextField의 높이
+                          child: TextField(
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: 180, // 내부 여백 (위, 아래)
+                                horizontal: 10, // 내부 여백 (양옆)
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    mainAxisAlignment:
+                        MainAxisAlignment.center, // 버튼을 화면 중앙에 배치
+                    children: [
+                      // '취소' 버튼
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.red,
+                          backgroundColor: Colors.white, // 버튼 배경색
+                          side: const BorderSide(color: Colors.red), // 테두리 색
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 30, vertical: 15), // 글씨 색
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(8), // 버튼 모서리 둥글게
+                          ),
+                        ),
+                        child: const Text(
+                          "취소",
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                      const SizedBox(width: 20), // 버튼 사이 간격
+                      // '접수' 버튼
+                      TextButton(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('접수가 완료되었습니다.'),
+                            ),
+                          );
+                        },
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.red, // 버튼 배경색
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 30, vertical: 15), // 글씨 색
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(8), // 버튼 모서리 둥글게
+                          ),
+                        ),
+                        child: const Text(
+                          "접수",
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ],
                   )
-                ]),
-                const SizedBox(
-                  height: 8,
-                ),
-                const Divider(
-                  color: Color(0xFFF2E8DA),
-                  thickness: 1, // 선 두께
-                  indent: 20,
-                  endIndent: 20,
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                const Row(
-                  children: [
-                    SizedBox(
-                      width: 25,
-                    ),
-                    Text(
-                      "이용 안내",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                const Row(
-                  children: [
-                    SizedBox(
-                      width: 25,
-                    ),
-                    Text(
-                      "앱 버전",
-                      style: TextStyle(
-                        fontSize: 18,
-                      ),
-                    ),
-                    Spacer(),
-                    Text(
-                      "demo",
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
-                    ),
-                    SizedBox(
-                      width: 25,
-                    )
-                  ],
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                Row(children: [
-                  const SizedBox(
-                    width: 25,
-                  ),
-                  TextButton(
-                    onPressed: () {},
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                    ),
-                    child: const Text(
-                      '문의하기',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w100,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ),
-                ]),
-                const SizedBox(
-                  height: 20,
-                ),
-                const Row(children: [
-                  SizedBox(
-                    width: 25,
-                  ),
-                  Text(
-                    "회원탈퇴",
-                    style: TextStyle(
-                      fontSize: 18,
-                    ),
-                  ),
-                ]),
-                const SizedBox(
-                  height: 20,
-                ),
-                const Divider(
-                  color: Color(0xFFF2E8DA),
-                  thickness: 1, // 선 두께
-                  indent: 20,
-                  endIndent: 20,
-                ),
-              ]),
-        )));
+                ]))));
   }
 }

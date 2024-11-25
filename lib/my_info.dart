@@ -253,8 +253,11 @@ class _MyInfoState extends State<MyInfo> {
                           ),
                           TextButton(
                             onPressed: () {
-                              //Navigator.push(context,
-                              //  MaterialPageRoute(builder: context)=>const enquiry)
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const enquiry()),
+                              );
                             },
                             style: TextButton.styleFrom(
                               padding: EdgeInsets.zero,
@@ -288,9 +291,9 @@ class _MyInfoState extends State<MyInfo> {
                         ),
                         const Divider(
                           color: Color(0xFFF2E8DA),
-                          thickness: 1, // 선 두께
-                          indent: 20,
-                          endIndent: 20,
+                          thickness: 1.5, // 선 두께
+                          indent: 0,
+                          endIndent: 0,
                         ),
                       ]),
                 ),
