@@ -3,7 +3,10 @@ import 'package:paymate/financial_ledger.dart';
 import 'package:paymate/friend_list.dart';
 import 'package:paymate/group_list.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:paymate/sign_in.dart';
+import 'package:paymate/sign_up.dart';
 import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,7 +14,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(const MaterialApp(
-    home: App(),
+    home: SignIn(),
   ));
 }
 
@@ -23,6 +26,7 @@ class App extends StatefulWidget {
 }
 
 class _Appstate extends State<App> {
+  User? user = FirebaseAuth.instance.currentUser;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,7 +34,7 @@ class _Appstate extends State<App> {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: 10,
+            horizontal: 30,
           ),
           child: Column(
             children: [
@@ -90,16 +94,27 @@ class _Appstate extends State<App> {
               ElevatedButton(
                 child: const Text('MY 모임 목록'),
                 onPressed: () {
+                  FirebaseAuth.instance.signOut();
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const GroupList()));
+                          builder: (context) =>  GroupList(user: user,)));
                 },
               ),
               const SizedBox(
                 height: 30,
               ),
               const Text('monthly 지출'),
+              TextButton(
+                onPressed: () {
+                  FirebaseAuth.instance.signOut();
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const SignIn()),
+                    (route) => false,
+                  );
+                },
+                child: const Text('로그아웃'),
+              )
             ],
           ),
         ),

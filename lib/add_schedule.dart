@@ -4,10 +4,13 @@ import 'package:paymate/header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 //import 'package:intl/intl.dart';
 //import 'group_list.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 
 class AddSchedule extends StatefulWidget {
   final String groupId;
+  
 
   const AddSchedule({
     super.key, 
@@ -25,7 +28,7 @@ class AddScheduleState extends State<AddSchedule> {
   List<Map<String,dynamic>> groupuser = [];
 
   List<Map<String,dynamic>> scheduleUser = [];
-
+  User? user = FirebaseAuth.instance.currentUser;
   final List<String> _categories = [
     '식비',
     '카페/간식',
@@ -43,35 +46,43 @@ class AddScheduleState extends State<AddSchedule> {
     '기타'
   ];
 
-@override
+  @override
   void initState() {
     super.initState();
-    _fetchGroupUsers();
+    fetchGroupUsers(); 
   }
 
-  // Fetch users in the group from Firestore
-  Future<void> _fetchGroupUsers() async {
-    try {
-      final groupDoc = FirebaseFirestore.instance.collection('group').doc(widget.groupId);
-      final docSnapshot = await groupDoc.get();
-
-      if (docSnapshot.exists) {
-        final users = docSnapshot['user'] as List<dynamic>;
-        setState(() {
-          groupuser = users.map((user) => {
-            'id': user['id'],
+// 특정 groupId에 해당하는 그룹의 user 필드를 실시간으로 가져오는 메서드
+Future<void> fetchGroupUsers() async {
+  try {
+    String groupId = widget.groupId;
+    
+    FirebaseFirestore.instance
+        .collection('group')
+        .doc(groupId)
+        .snapshots() // snapshots() 사용하여 실시간 데이터 수신
+        .listen((groupDoc) {
+      if (groupDoc.exists) {
+        List<dynamic> users = groupDoc['members'];
+        List<Map<String, dynamic>> fetchedGroupUsers = users.map((user) {
+          return {
+            'Uid': user['Uid'],
             'name': user['name'],
-          }).toList();
+          };
+        }).toList();
+
+        // 상태 업데이트
+        setState(() {
+          groupuser = fetchedGroupUsers;
         });
+      } else {
+        print('Group not found');
       }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('유저 로딩 실패: $e')),
-        );
-      }
-    }
+    });
+  } catch (e) {
+    print('그룹 데이터를 가져오는 중 오류 발생: $e');
   }
+}
 
   bool _isCreateButtonEnabled() {
     return (_scheduleNameController.text.isNotEmpty &&
@@ -254,10 +265,18 @@ class AddScheduleState extends State<AddSchedule> {
                       child: ListView.builder(
                         itemCount: groupuser.length,
                         itemBuilder: (context, index) {
-                          final friend = groupuser[index]!;
+                              final sortedGroupUser = List.from(groupuser); // 원본 데이터를 복사하여 정렬
+    sortedGroupUser.sort((a, b) {
+      if (a['Uid'] == "StCp4HEIvbOlumOf7P0KinSHjCx1") return -1; // '나'를 첫 번째로
+      if (b['Uid'] == "StCp4HEIvbOlumOf7P0KinSHjCx1") return 1;
+      return 0;
+    });
+                          final friend = sortedGroupUser[index];
                           final isSelected = scheduleUser.contains(friend);
                           return CheckboxListTile(
-                            title: Text(friend['name']),
+                            title: Text(
+                              friend['Uid']=="StCp4HEIvbOlumOf7P0KinSHjCx1"?'나':friend['name'],
+                              ),
                             value: isSelected,
                             activeColor: const Color(0xFFFFB2A5),
                             onChanged: (bool? value) {
@@ -273,39 +292,32 @@ class AddScheduleState extends State<AddSchedule> {
                         },
                       ),
                     ),
-                    const SizedBox(height: 30),
+                                        const SizedBox(height: 30),
                     ElevatedButton(
                       onPressed: _isCreateButtonEnabled()
                       ? () async{
                         try{
                           final firestore = FirebaseFirestore.instance;
                         // 'group' 컬렉션에 새 문서 생성 및 데이터 저장
-                        // 현재 그룹 문서 가져오기
+                                                // 현재 그룹 문서 가져오기
             final groupDoc = firestore.collection('group').doc(widget.groupId);
-
             // 기존 schedule 데이터를 읽어옴
             final groupSnapshot = await groupDoc.get();
             final existingSchedule = (groupSnapshot.data()?['schedule'] ?? []) as List;
-
             // 새로운 스케줄 데이터 생성
             final newSchedule = {
               'category': _selectedCategory!,
+              'Creator':{'Uid':"StCp4HEIvbOlumOf7P0KinSHjCx1",'name':'이수민' },
               'money': int.parse(_amountController.text), // 금액은 숫자로 저장
-              'scheduleCreator': {'id':'User1','name':'User1'}, // 생성 시간
               'scheduleDate': Timestamp.now(), // 생성 시간
               'schedule_user': scheduleUser, // 선택된 친구 목록
               'title': _scheduleNameController.text, // 일정 이름
-            };
-
+             };
             // 기존 데이터에 새 데이터를 추가
             existingSchedule.add(newSchedule);
-
             // 그룹 문서의 schedule 필드 업데이트
             await groupDoc.update({'schedule': existingSchedule});
-
-            
 if(mounted){
-
       Navigator.pop(context);
 }}
 catch(e){
@@ -318,14 +330,14 @@ catch(e){
                       }
                     }
                   : null,
-                      
+
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 50.0),
                         backgroundColor: Colors.grey,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10.0),
                         ),
-                      ),
+                      ),             
                       child: const Text(
                         '일정 생성',
                         style: TextStyle(

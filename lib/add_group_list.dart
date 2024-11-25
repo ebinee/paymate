@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:paymate/main.dart';
+//import 'package:paymate/main.dart';
 import 'package:paymate/header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
+//import 'package:intl/intl.dart';
 import 'groupchat.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AddGroupList extends StatefulWidget {
-  const AddGroupList({super.key});
+  final User? user;
+  const AddGroupList({
+    super.key,
+    required this.user,
+  });
 
   @override
   State<AddGroupList> createState() => _AddGroupList();
@@ -15,61 +19,82 @@ class AddGroupList extends StatefulWidget {
 
 class _AddGroupList extends State<AddGroupList> {
   List<Map<String, dynamic>> friends = [];
+  //String userId = '';
+  String userName = '';
+  User? _user;
 
   @override
   void initState() {
     super.initState();
+    _user = widget.user;
     fetchFriends();
   }
 
-  /*Future<void> fetchFriends() async {
-    try {
-      // Firestore의 'group' 컬렉션 참조
-      CollectionReference friendsCollection =
-          FirebaseFirestore.instance.collection('user');
+  Future<void> fetchFriends() async {
+    //User? user = FirebaseAuth.instance.currentUser;
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-      // 데이터 가져오기
-      QuerySnapshot snapshot = await friendsCollection.get();
-
-      // 데이터를 List<Map<String, dynamic>>로 변환
-      List<Map<String, dynamic>> fetchFriends = snapshot.docs.map((doc) {
-        return {
-          'id': doc['id'],
-          'name': doc['name'],
-        };
-      }).toList();
-
-      // 상태 업데이트
+    DocumentSnapshot snapshot1 =
+        await firestore.collection('user').doc(_user?.email).get();
+    if (snapshot1.exists) {
+      final data = snapshot1.data() as Map<String, dynamic>;
       setState(() {
-        friends = fetchFriends;
+        //userId = data['id'] ?? 'Unknown ID';
+        userName = data['name'] ?? 'Unknown Name';
       });
-    } catch (e) {
-      print("그룹 데이터를 가져오는 중 오류 발생: $e");
+    }
+
+    QuerySnapshot snapshot = await firestore
+        .collection('user')
+        .doc(_user?.email)
+        .collection('friends')
+        .get();
+
+    final List<Map<String, dynamic>> userFriends = snapshot.docs.map((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      return {
+        //'id': data['id'] ?? 'Unknown',
+        'name': data['name'] ?? 'Unknown',
+        'email': data['email'] ?? 'Unknown',
+      };
+    }).toList();
+
+    setState(() {
+      friends.addAll(userFriends);
+    });
+
+    // 친구 리스트에서 UID 가져오기
+    await fetchUidsForFriends();
+  }
+
+  Future<void> fetchUidsForFriends() async {
+    for (var individual in friends) {
+      final email = individual['email'];
+      if (email != null) {
+        final uid = await getUidByEmail(email); // UID 검색
+        setState(() {
+          individual['Uid'] = uid ?? 'UID not found'; // UID 추가
+        });
+      }
     }
   }
-*/
-  void fetchFriends() {
-    // Firestore의 'user' 컬렉션 참조
-    CollectionReference friendsCollection =
-        FirebaseFirestore.instance.collection('user');
 
-    // 실시간 데이터 스트림을 구독
-    friendsCollection.snapshots().listen((snapshot) {
-      // 데이터를 List<Map<String, dynamic>>로 변환
-      List<Map<String, dynamic>> fetchedFriends = snapshot.docs.map((doc) {
-        return {
-          'id': doc['id'],  // 문서 ID
-          'name': doc['name'],  // 'name' 필드
-        };
-      }).toList();
+  Future<String?> getUidByEmail(String email) async {
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('user')
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
 
-      // 상태 업데이트
-      setState(() {
-        friends = fetchedFriends;
-      });
-    }, onError: (e) {
-      print("그룹 데이터를 가져오는 중 오류 발생: $e");
-    });
+      if (snapshot.docs.isNotEmpty) {
+        return snapshot.docs.first.id; // UID 반환
+      }
+      return null;
+    } catch (e) {
+      print("Error fetching UID by email: $e");
+      return null;
+    }
   }
 
   String meetingName = ''; // 모임 이름
@@ -204,11 +229,11 @@ class _AddGroupList extends State<AddGroupList> {
                                       fontSize: 16.0,
                                       fontWeight: FontWeight.bold),
                                 ),
-                                Text(
+                                /*Text(
                                   friends[index]['id']!,
                                   style: const TextStyle(
                                       fontSize: 14.0, color: Colors.grey),
-                                ),
+                                ),*/
                               ],
                             ),
                           ),
@@ -227,13 +252,19 @@ class _AddGroupList extends State<AddGroupList> {
                         // Firestore 인스턴스 가져오기
                         final firestore = FirebaseFirestore.instance;
                         // 'group' 컬렉션에 새 문서 생성 및 데이터 저장
-                        final DocumentReference docRef = await firestore.collection('group').add({
-                          
+                        final DocumentReference docRef =
+                            await firestore.collection('group').add({
                           'date': FieldValue.serverTimestamp(), // 생성 시간 필드 추가
                           'meetingName': meetingName,
-                          'schedule':[],
-                          'user': [{'name':'User1','id':'User1',}as Map<String, dynamic>]  + selectedProfiles,
-                          });
+                          'schedule': [],
+                          'members': [
+                                {
+                                  'name': _user?.displayName,
+                                  'Uid': _user?.uid,
+                                } as Map<String, dynamic>
+                              ] +
+                              selectedProfiles,
+                        });
                         final String groupId = docRef.id; // 새로 생성된 문서 ID 가져오기
 
                         // 성공 시 화면 전환
@@ -243,7 +274,7 @@ class _AddGroupList extends State<AddGroupList> {
                             MaterialPageRoute(
                               builder: (context) => GroupChat(
                                 meetingName: meetingName,
-                                groupId:groupId,
+                                groupId: groupId,
                               ),
                             ),
                           );
@@ -279,4 +310,3 @@ class _AddGroupList extends State<AddGroupList> {
     );
   }
 }
-
