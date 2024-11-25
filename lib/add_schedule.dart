@@ -51,6 +51,15 @@ class AddScheduleState extends State<AddSchedule> {
     _user=widget.user;
   }
 
+String getUserNameByUid(String uid) {
+  // groupuser에서 _user?.uid와 일치하는 유저 찾기
+  final user = groupuser.firstWhere(
+    (element) => element['Uid'] == uid,
+    //orElse: () => '', // 찾을 수 없을 경우 null 반환
+  );
+  return user != null ? user['name'] : ''; // name이 존재하면 반환, 없으면 빈 문자열 반환
+}
+
 Future<void> fetchGroupUsers() async {
   try {
     String groupId = widget.groupId;
@@ -304,7 +313,7 @@ Future<void> fetchGroupUsers() async {
             // 새로운 스케줄 데이터 생성
             final newSchedule = {
               'category': _selectedCategory!,
-              'Creator':{'Uid':_user?.uid,'name':'이수민' },
+              'Creator':{'Uid':_user?.uid,'name':getUserNameByUid(_user?.uid ?? '') },
               'money': int.parse(_amountController.text), // 금액은 숫자로 저장
               'scheduleDate': Timestamp.now(), // 생성 시간
               'schedule_user': scheduleUser, // 선택된 친구 목록
