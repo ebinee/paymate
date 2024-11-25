@@ -56,11 +56,7 @@ class GroupListState extends State<GroupList> {
         }).toList();
       });
     } catch (e) {
-<<<<<<< HEAD
-      print("그룹 데이터를 가져오는 중 오류 발생: $e");
-=======
       // print("그룹 데이터를 가져오는 중 오류 발생: $e");
->>>>>>> 373194c667ad282ac4b413ca31f48b5b1dd26b1e
     }
   }
 
@@ -126,10 +122,7 @@ class GroupListState extends State<GroupList> {
                             }).toList()
                           : <String>[],
                       groupId: groups[index]['id'],
-<<<<<<< HEAD
                       user: _user,
-=======
->>>>>>> 373194c667ad282ac4b413ca31f48b5b1dd26b1e
                     ),
                   );
                 },
@@ -177,10 +170,7 @@ class GroupCard extends StatelessWidget {
                   builder: (context) => GroupChat(
                     meetingName: meetingName,
                     groupId: groupId,
-<<<<<<< HEAD
                     user: user,
-=======
->>>>>>> 373194c667ad282ac4b413ca31f48b5b1dd26b1e
                   ),
                 ),
               );
@@ -236,22 +226,3 @@ class GroupCard extends StatelessWidget {
     );
   }
 }
-<<<<<<< HEAD
-
-// class AddSchedule extends StatelessWidget {
-//   const AddSchedule({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text(' '),
-//       ),
-//       body: const Center(
-//         child: Text(' '),
-//       ),
-//     );
-//   }
-// }
-=======
->>>>>>> 373194c667ad282ac4b413ca31f48b5b1dd26b1e

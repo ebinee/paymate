@@ -198,202 +198,271 @@ class _Appstate extends State<App> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Container(
-          color: Colors.white,
-        ),
-        ClipPath(
-          clipper: TrapezoidClipper(),
-          child: Container(
-            width: double.infinity,
-            height: 230, // 높이 조정 가능
-            color: const Color(0xFFF2E8DA),
-          ),
-        ),
-        Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10,
-            ),
-            child: Column(children: [
-              const SizedBox(
-                height: 30,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Image.asset(
-                    'assets/images/paymate_logo.png',
-                    width: 200,
-                    height: 65,
-                    fit: BoxFit.fill,
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const MyInfo()),
-                      );
-                    },
-                    child: const Icon(
-                      Icons.person,
-                      color: Color(0xFF646464),
-                      size: 45,
-                    ),
-                  )
-                ],
-              ),
-              const SizedBox(
-                height: 50,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Go to FinancialLedger()
-                  ElevatedButton(
-                    child: const Text('MY 가계부'),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const FinancialLedger()),
-                      );
-                    },
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  // Go to FriendList()
-                  ElevatedButton(
-                    child: const Text('MY 친구 목록'),
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const FriendList()));
-                    },
-                  )
-                ],
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              // Go to GroupList()
-              ElevatedButton(
-                child: const Text('MY 모임 목록'),
-                onPressed: () {
-                  FirebaseAuth.instance.signOut();
-                  Navigator.push(
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => GroupList(
-                                user: user,
-                              )));
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.black54,
-                  //foregroundColor: Colors.white,
-                  backgroundColor: const Color(0xFFFFB2A5).withOpacity(0.7),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 0, vertical: 0), // 패딩
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20), // 모서리 둥글기
-                  ),
-                  maximumSize: const Size(330, 130),
-                ),
-                child: const Row(
-                  children: [
-                    SizedBox(
-                      width: 30,
-                    ),
-                    Text(
-                      'MY \n모임목록',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(
-                      width: 60,
-                    ),
-                    Icon(
-                      Icons.group_outlined, // 사람 모양 아이콘
-                      size: 130,
-                      color: Colors.white70,
-                    ),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Column(
-                      children: [
-                        SizedBox(
-                          height: 85,
-                        ),
-                        Icon(
-                          Icons.arrow_forward_ios, // 화살표 아이콘
-                          size: 20,
-                          color: Colors.black54,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(
-                height: 18,
-              ),
-              Container(
-                padding: const EdgeInsets.only(left: 25.0), // 왼쪽 정렬
-                child: const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "MONTHLY 지출",
-                    style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black54,
-                        decoration: TextDecoration.none),
-                  ),
-                ),
-              ),
-              // const SizedBox(height: 5),
-              // 차트 추가
-              FutureBuilder<Map<int, int>>(
-                future: _monthlyExpense, // Firebase에서 데이터를 가져오는 Future
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (snapshot.hasData) {
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        height: 240, // 차트 높이 설정
-                        child: buildBarChart(snapshot.data!), // 차트 위젯 생성
-                      ),
-                    );
-                  } else {
-                    return const Center(child: Text('No data available.'));
-                  }
-                },
-              ),
-            ]),
-          ),
+    return Stack(children: [
+      Container(
+        color: Colors.white,
+      ),
+      ClipPath(
+        clipper: TrapezoidClipper(),
+        child: Container(
+          width: double.infinity,
+          height: 230, // 높이 조정 가능
+          color: const Color(0xFFF2E8DA),
         ),
       ),
-    )
-  }
-
-  void _navigateToNewPage(BuildContext context) {
-    /*Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => ()),
-    )*/
+      Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 10,
+          ),
+          child: Column(children: [
+            const SizedBox(
+              height: 30,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Image.asset(
+                  'assets/images/paymate_logo.png',
+                  width: 200,
+                  height: 65,
+                  fit: BoxFit.fill,
+                ),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const MyInfo()),
+                    );
+                  },
+                  child: const Icon(
+                    Icons.person,
+                    color: Color(0xFF646464),
+                    size: 45,
+                  ),
+                )
+              ],
+            ),
+            const SizedBox(
+              height: 50,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Go to FinancialLedger()
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const FinancialLedger()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.black54,
+                    backgroundColor: Colors.white.withOpacity(0.9),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 0, vertical: 25),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: const Row(
+                    children: [
+                      SizedBox(
+                        width: 25,
+                      ),
+                      Text(
+                        'MY \n가계부',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 40,
+                      ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          SizedBox(
+                            height: 50,
+                          ),
+                          Icon(
+                            Icons.arrow_forward_ios,
+                            size: 20,
+                            color: Color(0xFFFFB2A5),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        width: 20,
+                      )
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const FriendList()));
+                  },
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.black54,
+                    backgroundColor: Colors.white.withOpacity(0.9),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 0, vertical: 25),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: const Row(
+                    children: [
+                      SizedBox(
+                        width: 25,
+                      ),
+                      Text(
+                        'MY \n친구목록',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 25,
+                      ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          SizedBox(
+                            height: 50,
+                          ),
+                          Icon(
+                            Icons.arrow_forward_ios,
+                            size: 20,
+                            color: Color(0xFFFFB2A5),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        width: 20,
+                      )
+                    ],
+                  ),
+                )
+              ],
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            // Go to GroupList()
+            ElevatedButton(
+              onPressed: () {
+                FirebaseAuth.instance.signOut();
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => GroupList(
+                              user: user,
+                            )));
+              },
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.black54,
+                //foregroundColor: Colors.white,
+                backgroundColor: const Color(0xFFFFB2A5).withOpacity(0.7),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 0, vertical: 0), // 패딩
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20), // 모서리 둥글기
+                ),
+                maximumSize: const Size(330, 130),
+              ),
+              child: const Row(
+                children: [
+                  SizedBox(
+                    width: 30,
+                  ),
+                  Text(
+                    'MY \n모임목록',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 60,
+                  ),
+                  Icon(
+                    Icons.group_outlined, // 사람 모양 아이콘
+                    size: 130,
+                    color: Colors.white70,
+                  ),
+                  SizedBox(
+                    width: 5,
+                  ),
+                  Column(
+                    children: [
+                      SizedBox(
+                        height: 85,
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios, // 화살표 아이콘
+                        size: 20,
+                        color: Colors.black54,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(
+              height: 18,
+            ),
+            Container(
+              padding: const EdgeInsets.only(left: 25.0), // 왼쪽 정렬
+              child: const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "MONTHLY 지출",
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black54,
+                      decoration: TextDecoration.none),
+                ),
+              ),
+            ),
+            // const SizedBox(height: 5),
+            // 차트 추가
+            FutureBuilder<Map<int, int>>(
+              future: _monthlyExpense, // Firebase에서 데이터를 가져오는 Future
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (snapshot.hasData) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: SizedBox(
+                      height: 240, // 차트 높이 설정
+                      child: buildBarChart(snapshot.data!), // 차트 위젯 생성
+                    ),
+                  );
+                } else {
+                  return const Center(child: Text('No data available.'));
+                }
+              },
+            ),
+          ]),
+        ),
+      ),
+    ]);
   }
 }
 

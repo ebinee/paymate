@@ -1,8 +1,9 @@
-// ignore_for_file: use_build_context_synchronously
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:paymate/header.dart';
+import 'package:paymate/my_info.dart';
 
 class FriendList extends StatefulWidget {
   const FriendList({super.key});
@@ -13,7 +14,9 @@ class FriendList extends StatefulWidget {
 
 class FriendListState extends State<FriendList> {
   final TextEditingController _idController = TextEditingController();
-  List<Map<String, String>> _friends = [];
+  final List<Map<String, dynamic>> _friends = [];
+  String userId = '';
+  String userName = '';
 
   @override
   void initState() {
@@ -22,27 +25,36 @@ class FriendListState extends State<FriendList> {
   }
 
   Future<void> _fetchData() async {
-    try {
-      final FirebaseFirestore firestore = FirebaseFirestore.instance;
-      QuerySnapshot snapshot = await firestore.collection('myuser').get();
+    User? user = FirebaseAuth.instance.currentUser;
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-      Map<String, String> idToNameMap = {};
-      List<Map<String, String>> friends = [];
-
-      for (QueryDocumentSnapshot doc in snapshot.docs) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        String id = data['id'] ?? 'Unknown';
-        String name = data['name'] ?? 'Unknown';
-        idToNameMap[id] = name;
-        friends.add({'name': name, 'id': id});
-      }
-
+    DocumentSnapshot snapshot1 =
+        await firestore.collection('user').doc(user?.email).get();
+    if (snapshot1.exists) {
+      final data = snapshot1.data() as Map<String, dynamic>;
       setState(() {
-        _friends = friends;
+        userId = data['id'] ?? 'Unknown ID';
+        userName = data['name'] ?? 'Unknown Name';
       });
-    } catch (e) {
-      print('Error fetching data: $e');
     }
+
+    QuerySnapshot snapshot = await firestore
+        .collection('user')
+        .doc(user?.email)
+        .collection('friends')
+        .get();
+
+    final List<Map<String, dynamic>> friends = snapshot.docs.map((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      return {
+        'id': data['id'] ?? 'Unknown',
+        'name': data['name'] ?? 'Unknown',
+      };
+    }).toList();
+
+    setState(() {
+      _friends.addAll(friends);
+    });
   }
 
   @override
@@ -120,37 +132,67 @@ class FriendListState extends State<FriendList> {
     );
   }
 
-  void _deleteFriend(String name, String id) {
+  Future<void> _deleteFriend(String name, String id) async {
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    User? user = FirebaseAuth.instance.currentUser;
+
+    final QuerySnapshot querySnapshot =
+        await firestore.collection('user').where('id', isEqualTo: id).get();
+    final String friendUid = querySnapshot.docs.first.id;
+
     setState(() {
       _friends.removeWhere(
           (friend) => friend['name'] == name && friend['id'] == id);
     });
+    try {
+      await firestore
+          .collection('user')
+          .doc("${user?.email}")
+          .collection('friends')
+          .doc(friendUid)
+          .delete();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('친구가 삭제되었습니다.')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('친구 삭제에 실패했습니다.')),
+      );
+    }
   }
 
   void _addFriend(BuildContext context, String id) async {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    User? user = FirebaseAuth.instance.currentUser;
 
-    try {
-      final QuerySnapshot querySnapshot =
-          await firestore.collection('user').where('id', isEqualTo: id).get();
+    final QuerySnapshot querySnapshot =
+        await firestore.collection('user').where('id', isEqualTo: id).get();
 
-      if (querySnapshot.docs.isNotEmpty) {
-        final Map<String, dynamic> data =
-            querySnapshot.docs.first.data() as Map<String, dynamic>;
-        final String name = data['name'] ?? 'Unknown';
+    if (querySnapshot.docs.isNotEmpty) {
+      final Map<String, dynamic> data =
+          querySnapshot.docs.first.data() as Map<String, dynamic>;
+      final String friendUid = querySnapshot.docs.first.id;
+      final String name = data['name'] ?? 'Unknown';
 
+      if (!_friends.any((friend) => friend['id'] == id)) {
+        await firestore
+            .collection('user')
+            .doc("${user?.email}")
+            .collection('friends')
+            .doc(friendUid)
+            .set({
+          'name': name,
+          'id': id,
+        });
         setState(() {
           _friends.add({'name': name, 'id': id});
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('해당하는 아이디가 없습니다.')),
+          const SnackBar(content: Text('이미 추가되었거나 없는 아이디입니다.')),
         );
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('친구 추가 실패: $e')),
-      );
     }
   }
 
@@ -169,59 +211,63 @@ class FriendListState extends State<FriendList> {
             const SizedBox(height: 30),
             GestureDetector(
               onTap: () {
-                _navigateToNewPage(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MyInfo()),
+                );
               },
               child: Row(
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          spreadRadius: 2,
-                          blurRadius: 5,
-                          offset: const Offset(0, 3),
-                        )
-                      ],
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    child: const Padding(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 20, horizontal: 30),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          SizedBox(width: 10),
-                          Icon(Icons.person_outline_outlined,
-                              size: 50, color: Color(0xFF646464)),
-                          SizedBox(width: 15),
-                          Padding(
-                            padding: EdgeInsets.only(bottom: 4),
-                            child: Text(
-                              '이수현',
-                              style: TextStyle(
-                                color: Color(0xFF646464),
-                                fontSize: 30,
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 20),
-                          Padding(
-                            padding: EdgeInsets.only(bottom: 2),
-                            child: Text(
-                              'TNGUSDL',
-                              style: TextStyle(
-                                color: Color(0xFF646464),
-                                fontSize: 18,
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 15),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: const Offset(0, 3),
+                          )
                         ],
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 20, horizontal: 30),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const SizedBox(width: 10),
+                            const Icon(Icons.person_outline_outlined,
+                                size: 50, color: Color(0xFF646464)),
+                            const SizedBox(width: 15),
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Text(
+                                userName,
+                                style: const TextStyle(
+                                  color: Color(0xFF646464),
+                                  fontSize: 30,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 20),
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 2),
+                              child: Text(
+                                userId,
+                                style: const TextStyle(
+                                  color: Color(0xFF646464),
+                                  fontSize: 18,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
+                  )
                 ],
               ),
             ),
@@ -282,6 +328,25 @@ class FriendListState extends State<FriendList> {
                               style: TextStyle(fontSize: 15)),
                           onPressed: () {
                             String enteredId = _idController.text;
+                            if (userId == enteredId) {
+                              Future.delayed(const Duration(seconds: 1), () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text('자기 자신을 친구로 추가할 수 없습니다.')),
+                                );
+                              });
+                              return;
+                            }
+                            if (_friends
+                                .any((friend) => friend['id'] == enteredId)) {
+                              Future.delayed(const Duration(seconds: 1), () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text('이미 추가된 친구입니다.')),
+                                );
+                              });
+                              return;
+                            }
                             Navigator.of(context).pop();
                             _addFriend(context, enteredId);
                           },
@@ -368,7 +433,7 @@ class FriendListState extends State<FriendList> {
                             ),
                             const Spacer(),
                             Align(
-                              alignment: Alignment.centerRight, // 오른쪽 정렬
+                              alignment: Alignment.centerRight,
                               child: IconButton(
                                 icon: const Icon(Icons.delete,
                                     color: Colors.grey),
@@ -388,44 +453,6 @@ class FriendListState extends State<FriendList> {
                 },
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _navigateToNewPage(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => const NewPage(id: "TNGUSDL", name: "이수현")),
-    );
-  }
-}
-
-class NewPage extends StatelessWidget {
-  final String id;
-  final String name;
-
-  const NewPage({super.key, required this.id, required this.name});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const Header(
-        headerTitle: "내 정보",
-      ),
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Icon(Icons.person_pin, size: 300, color: Colors.pinkAccent),
-            const SizedBox(height: 10),
-            Text(name, style: const TextStyle(fontSize: 40)),
-            const SizedBox(height: 5),
-            Text('ID : $id', style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 20),
           ],
         ),
       ),
