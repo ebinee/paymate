@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:paymate/add_day_expense.dart';
@@ -21,41 +22,6 @@ class _DayExpenseState extends State<DayExpense> {
   late DateTime _selectedDay;
   String? _selectedCategory;
   final firestore = FirebaseFirestore.instance;
-
-  Map<String, IconData> iconMap = {};
-
-  Stream<List<Map<String, dynamic>>> getData() {
-    DateTime startDay = DateTime(
-      _selectedDay.year,
-      _selectedDay.month,
-      _selectedDay.day,
-      00,
-      00,
-      00,
-    );
-    DateTime endDay = DateTime(
-      _selectedDay.year,
-      _selectedDay.month,
-      _selectedDay.day,
-      23,
-      59,
-      59,
-    );
-
-    return firestore
-        .collection('expense')
-        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startDay))
-        .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endDay))
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) {
-              return {
-                'category_icon': getIconForCategory(doc['category']),
-                'category': doc['category'],
-                'title': doc['title'],
-                'money': doc['money'],
-              };
-            }).toList());
-  }
 
   Icon getIconForCategory(String category) {
     switch (category) {
@@ -87,6 +53,90 @@ class _DayExpenseState extends State<DayExpense> {
         return const Icon(Icons.receipt);
       default:
         return const Icon(Icons.dataset_rounded);
+    }
+  }
+
+  Map<String, IconData> iconMap = {};
+
+  Future<List<Map<String, dynamic>>> getData() async {
+    DateTime startDay = DateTime(
+      _selectedDay.year,
+      _selectedDay.month,
+      _selectedDay.day,
+      00,
+      00,
+      00,
+    );
+    DateTime endDay = DateTime(
+      _selectedDay.year,
+      _selectedDay.month,
+      _selectedDay.day,
+      23,
+      59,
+      59,
+    );
+
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      return [];
+    }
+
+    try {
+      final expenseSnapshot = await firestore
+          .collection('expense')
+          .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startDay))
+          .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endDay))
+          .where('uid', isEqualTo: user.uid)
+          .get();
+
+      final expenseData = expenseSnapshot.docs.map((doc) {
+        return {
+          'category_icon': getIconForCategory(doc['category']),
+          'category': doc['category'],
+          'title': doc['title'],
+          'money': doc['money'],
+        };
+      }).toList();
+
+      final groupSnapshot = await firestore.collection('group').get();
+      final groupData = groupSnapshot.docs.expand((groupDoc) {
+        if (!groupDoc.data().containsKey('schedule')) {
+          return [];
+        }
+        List members = groupDoc['members'] ?? [];
+        bool isMember = members.any((member) => member['Uid'] == user.uid);
+
+        if (!isMember) return [];
+
+        List schedules = groupDoc['schedule'] ?? [];
+
+        return schedules.where((schedule) {
+          if (schedule['scheduleDate'] == null) return false;
+          DateTime scheduleDate =
+              (schedule['scheduleDate'] as Timestamp).toDate();
+          DateTime scheduleDateLocal =
+              scheduleDate.add(const Duration(hours: 9));
+
+          return (scheduleDateLocal.isAfter(startDay) ||
+                  scheduleDateLocal.isAtSameMomentAs(startDay)) &&
+              (scheduleDateLocal.isBefore(endDay) ||
+                  scheduleDateLocal.isAtSameMomentAs(endDay));
+        }).map((schedule) {
+          return {
+            'category_icon': getIconForCategory(schedule['category']),
+            'category': schedule['category'],
+            'title': groupDoc['meetingName'] + " - " + schedule['title'],
+            'money':
+                (schedule['money'] / schedule['schedule_user'].length).toInt(),
+          };
+        });
+      }).toList();
+
+      return [...expenseData, ...groupData];
+    } catch (e) {
+      print('데이터 가져오기 실패: $e');
+      return [];
     }
   }
 
@@ -158,8 +208,8 @@ class _DayExpenseState extends State<DayExpense> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  StreamBuilder<List<Map<String, dynamic>>>(
-                    stream: getData(),
+                  FutureBuilder<List<Map<String, dynamic>>>(
+                    future: getData(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const CircularProgressIndicator();
@@ -181,8 +231,8 @@ class _DayExpenseState extends State<DayExpense> {
               const SizedBox(
                 height: 5,
               ),
-              StreamBuilder<List<Map<String, dynamic>>>(
-                stream: getData(),
+              FutureBuilder<List<Map<String, dynamic>>>(
+                future: getData(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const CircularProgressIndicator();
@@ -234,9 +284,11 @@ class _DayExpenseState extends State<DayExpense> {
                           ),
                         ),
                       ),
-                      SizedBox(
-                        height: 300,
+                      Container(
+                        margin: const EdgeInsets.symmetric(vertical: 5.0),
                         child: ListView.builder(
+                          shrinkWrap: true,
+                          physics: const ClampingScrollPhysics(),
                           itemCount: filterdExp.length,
                           itemBuilder: (ctx, index) {
                             final expense = filterdExp[index];
@@ -415,9 +467,10 @@ class _DropButtonState extends State<DropButton> {
             horizontal: 5,
           ),
           child: DropdownButton(
+            isExpanded: true,
             hint: const Text('카테고리'),
             value: _selectedCategory,
-            items: ['전체', ...widget.categoryItem]
+            items: {'전체', ...widget.categoryItem}
                 .map((category) => DropdownMenuItem<String>(
                       value: category == '전체' ? null : category,
                       child: Text(category),

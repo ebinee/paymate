@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:paymate/day_expense.dart';
 import 'package:paymate/header.dart';
@@ -63,8 +64,10 @@ class FinancialLedgerState extends State<FinancialLedger> {
         DateTime(DateTime.now().year, DateTime.now().month + 1, 1)
             .subtract(const Duration(days: 1));
 
+    User? user = FirebaseAuth.instance.currentUser;
     QuerySnapshot snapshot = await FirebaseFirestore.instance
         .collection('expense')
+        .where('uid', isEqualTo: '${user?.uid}')
         .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startMonth))
         .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endMonth))
         .get();
@@ -94,6 +97,8 @@ class FinancialLedgerState extends State<FinancialLedger> {
 
   @override
   Widget build(BuildContext context) {
+    final sortedCategoryExpense = categoryExpense.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
     return Scaffold(
       appBar: const Header(
         headerTitle: 'MY 가계부',
@@ -127,7 +132,7 @@ class FinancialLedgerState extends State<FinancialLedger> {
                       border: Border.all(color: const Color(0xFFFFB2A5)),
                       borderRadius: BorderRadius.circular(10)),
                   child: Column(
-                    children: categoryExpense.entries.take(4).map((entry) {
+                    children: sortedCategoryExpense.take(4).map((entry) {
                       double percent = entry.value / totalExpense;
                       return CategoryBar(
                           categoryPercent: percent,
@@ -197,7 +202,7 @@ class CategoryBar extends StatelessWidget {
                 ],
               ),
               LinearPercentIndicator(
-                width: 250,
+                width: 240,
                 lineHeight: 13.0,
                 percent: categoryPercent,
                 backgroundColor: Colors.grey[300],

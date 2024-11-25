@@ -4,7 +4,6 @@ import 'package:paymate/friend_list.dart';
 import 'package:paymate/group_list.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:paymate/sign_in.dart';
-import 'package:paymate/sign_up.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -94,7 +93,7 @@ class _Appstate extends State<App> {
                 child: const Text('MY 모임 목록'),
                 onPressed: () {
                   FirebaseAuth.instance.signOut();
-                  Navigator.pushReplacement(
+                  Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => const GroupList()));
