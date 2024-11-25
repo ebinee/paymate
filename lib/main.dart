@@ -2,14 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:paymate/financial_ledger.dart';
 import 'package:paymate/friend_list.dart';
 import 'package:paymate/group_list.dart';
-import 'package:paymate/header.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:paymate/my_page.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MaterialApp(
-    home: Scaffold(
-      backgroundColor: Colors.white,
-      body: App(),
-    ),
+    home: App(),
   ));
 }
 
@@ -20,59 +25,181 @@ class App extends StatefulWidget {
   State<App> createState() => _Appstate();
 }
 
-class NewPage extends StatelessWidget {
-  final String id;
-  final String name;
-
-  const NewPage({super.key, required this.id, required this.name});
+class _Appstate extends State<App> {
+  Future<Map<int, int>>? _monthlyExpense;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const Header(
-        headerTitle: "내 정보",
+  void initState() {
+    super.initState();
+    _monthlyExpense = fetchMonthlyExpense(); // Firebase 데이터 가져오기
+  }
+
+  Future<Map<int, int>> fetchMonthlyExpense() async {
+    Map<int, int> monthlyExpense = {};
+
+    try {
+      // Firestore에서 expense 컬렉션 데이터 가져오기
+      QuerySnapshot<Map<String, dynamic>> snapshot =
+          await FirebaseFirestore.instance.collection('expense').get();
+
+      for (var doc in snapshot.docs) {
+        Map<String, dynamic> data = doc.data();
+
+        // print("Document data: $data");
+
+        // 'date' 필드를 Timestamp로 처리
+        Timestamp timestamp = data['date'];
+        DateTime dateTime = timestamp.toDate();
+        int month = dateTime.month;
+
+        // 'money' 필드 처리
+        int money = data['money'];
+
+        // 월별 합산
+        if (monthlyExpense.containsKey(month)) {
+          monthlyExpense[month] = monthlyExpense[month]! + money;
+        } else {
+          monthlyExpense[month] = money;
+        }
+      }
+    } catch (e) {
+      print("Error fetching data: $e");
+    }
+
+    return monthlyExpense;
+  }
+
+  Widget buildBarChart(Map<int, int> monthlyExpense) {
+    // 월 이름 매핑
+    const monthNames = {
+      //1: "JAN",
+      //2: "FEB",
+      //3: "MAR",
+      //4: "APR",
+      //5: "MAY",
+      6: "JUN",
+      7: "JUL",
+      8: "AUG",
+      9: "SEP",
+      10: "OCT",
+      11: "NOV",
+      //12: "DEC"
+    };
+
+    return Container(
+      // Chart 겉의 테두리
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+      width: MediaQuery.of(context).size.width * 0.85, // 화면 너비의 80%
+      decoration: BoxDecoration(
+        border: Border.all(
+            color: const Color(0xFFFFB2A5).withOpacity(0.3), width: 1),
+        borderRadius: BorderRadius.circular(12), // Rounded border
       ),
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Icon(Icons.person_pin, size: 300, color: Colors.pinkAccent),
-            const SizedBox(height: 10),
-            Text(name, style: const TextStyle(fontSize: 40)),
-            const SizedBox(height: 5),
-            Text('ID : $id', style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 20),
-          ],
+      child: BarChart(
+        BarChartData(
+          alignment: BarChartAlignment.spaceEvenly,
+          maxY: (() {
+            final maxExpense =
+                monthlyExpense.values.reduce((a, b) => a > b ? a : b);
+            return maxExpense.toDouble() + (maxExpense / 4).toDouble();
+          })(),
+          gridData: const FlGridData(show: false),
+          borderData: FlBorderData(show: false),
+          barGroups: (() {
+            final maxExpense =
+                monthlyExpense.values.reduce((a, b) => a > b ? a : b);
+            return [6, 7, 8, 9, 10, 11].map((month) {
+              final double value = monthlyExpense[month]?.toDouble() ?? 0.0;
+              return BarChartGroupData(
+                x: month,
+                barRods: [
+                  BarChartRodData(
+                    toY: value,
+                    color: value == maxExpense.toDouble()
+                        ? const Color(0xFFFFB2A5).withOpacity(0.7) // 최대값 막대 색상
+                        : const Color(0xFFFFB2A5).withOpacity(0.3), // 나머지 막대 색상
+                    width: 35,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ],
+                showingTooltipIndicators: [0], // Tooltip 활성화
+              );
+            }).toList();
+          })(),
+          titlesData: FlTitlesData(
+            show: true,
+            leftTitles: const AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: false,
+              ),
+            ),
+            rightTitles: const AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: false, // 우측 숫자 숨기기
+              ),
+            ),
+            topTitles: const AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: false, // 상단 레이블 제거
+              ),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (value, meta) {
+                  final month = monthNames[value.toInt()] ?? '';
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Text(
+                      month,
+                      style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black54,
+                          decoration: TextDecoration.none),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          barTouchData: BarTouchData(
+            touchTooltipData: BarTouchTooltipData(
+              tooltipMargin: -5, // 툴팁과 막대 사이의 간격
+              tooltipHorizontalAlignment:
+                  FLHorizontalAlignment.center, // 툴팁을 막대 중앙에 정렬
+              getTooltipColor: (group) => Colors.transparent, // 툴팁 배경색 설정
+              getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                final maxExpense =
+                    monthlyExpense.values.reduce((a, b) => a > b ? a : b);
+                final isMaxValue = rod.toY == maxExpense.toDouble();
+
+                return BarTooltipItem(
+                  (rod.toY ~/ 10000).toString(), // 막대의 값을 표시
+                  TextStyle(
+                    color: isMaxValue
+                        ? const Color(0xFFF97272) // 최대값 막대의 툴팁 텍스트 색상
+                        : Colors.black54, // 나머지 막대의 툴팁 텍스트 색상
+                    fontWeight: FontWeight.bold, // 텍스트 굵게
+                    fontSize: 12,
+                    decoration: TextDecoration.none,
+                  ),
+                );
+              },
+              fitInsideVertically: true, // 툴팁이 차트의 위아래를 넘지 않도록 제한 (수직)
+            ),
+          ),
         ),
       ),
     );
   }
-}
 
-class TrapezoidClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    Path path = Path();
-    path.lineTo(0, 0);
-    path.lineTo(size.width, 0);
-    path.lineTo(size.width, size.height - 40);
-    path.lineTo(0, size.height);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) {
-    return false; // 클리퍼 재사용 여부
-  }
-}
-
-class _Appstate extends State<App> {
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        Container(
+          color: Colors.white,
+        ),
         ClipPath(
           clipper: TrapezoidClipper(),
           child: Container(
@@ -102,7 +229,10 @@ class _Appstate extends State<App> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      _navigateToNewPage(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const MyPage()),
+                      );
                     },
                     child: const Icon(
                       Icons.person,
@@ -118,6 +248,7 @@ class _Appstate extends State<App> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  // Go to FinancialLedger()
                   ElevatedButton(
                     onPressed: () {
                       Navigator.push(
@@ -172,6 +303,7 @@ class _Appstate extends State<App> {
                   const SizedBox(
                     width: 10,
                   ),
+                  // Go to FriendList()
                   ElevatedButton(
                     onPressed: () {
                       Navigator.push(
@@ -227,6 +359,7 @@ class _Appstate extends State<App> {
               const SizedBox(
                 height: 10,
               ),
+              // Go to GroupList()
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(
@@ -236,6 +369,7 @@ class _Appstate extends State<App> {
                 },
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.black54,
+                  //foregroundColor: Colors.white,
                   backgroundColor: const Color(0xFFFFB2A5).withOpacity(0.7),
                   padding: const EdgeInsets.symmetric(
                       horizontal: 0, vertical: 0), // 패딩
@@ -283,22 +417,43 @@ class _Appstate extends State<App> {
                 ),
               ),
               const SizedBox(
-                height: 15,
+                height: 18,
               ),
               Container(
-                padding: const EdgeInsets.only(left: 25.0),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.start, // 왼쪽 정렬
-                  children: [
-                    Text(
-                      "MONTHLY 지출",
-                      style: TextStyle(
-                        fontSize: 15,
+                padding: const EdgeInsets.only(left: 25.0), // 왼쪽 정렬
+                child: const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "MONTHLY 지출",
+                    style: TextStyle(
+                        fontSize: 13,
                         fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                        color: Colors.black54,
+                        decoration: TextDecoration.none),
+                  ),
                 ),
+              ),
+              // const SizedBox(height: 5),
+              // 차트 추가
+              FutureBuilder<Map<int, int>>(
+                future: _monthlyExpense, // Firebase에서 데이터를 가져오는 Future
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (snapshot.hasData) {
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SizedBox(
+                        height: 240, // 차트 높이 설정
+                        child: buildBarChart(snapshot.data!), // 차트 위젯 생성
+                      ),
+                    );
+                  } else {
+                    return const Center(child: Text('No data available.'));
+                  }
+                },
               ),
             ]),
           ),
@@ -308,10 +463,28 @@ class _Appstate extends State<App> {
   }
 
   void _navigateToNewPage(BuildContext context) {
-    Navigator.push(
+    /*Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => const NewPage(id: "USER", name: "사용자")),
-    );
+          builder: (context) => ()),
+    )*/
+  }
+}
+
+class TrapezoidClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    Path path = Path();
+    path.lineTo(0, 0);
+    path.lineTo(size.width, 0);
+    path.lineTo(size.width, size.height - 40);
+    path.lineTo(0, size.height);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) {
+    return false; // 클리퍼 재사용 여부
   }
 }
