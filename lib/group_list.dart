@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:paymate/main.dart';
-import 'package:paymate/add_schedule.dart';
 import 'package:paymate/header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -58,7 +56,11 @@ class GroupListState extends State<GroupList> {
         }).toList();
       });
     } catch (e) {
+<<<<<<< HEAD
       print("그룹 데이터를 가져오는 중 오류 발생: $e");
+=======
+      // print("그룹 데이터를 가져오는 중 오류 발생: $e");
+>>>>>>> 373194c667ad282ac4b413ca31f48b5b1dd26b1e
     }
   }
 
@@ -124,7 +126,10 @@ class GroupListState extends State<GroupList> {
                             }).toList()
                           : <String>[],
                       groupId: groups[index]['id'],
+<<<<<<< HEAD
                       user: _user,
+=======
+>>>>>>> 373194c667ad282ac4b413ca31f48b5b1dd26b1e
                     ),
                   );
                 },
@@ -172,7 +177,10 @@ class GroupCard extends StatelessWidget {
                   builder: (context) => GroupChat(
                     meetingName: meetingName,
                     groupId: groupId,
+<<<<<<< HEAD
                     user: user,
+=======
+>>>>>>> 373194c667ad282ac4b413ca31f48b5b1dd26b1e
                   ),
                 ),
               );
@@ -228,6 +236,7 @@ class GroupCard extends StatelessWidget {
     );
   }
 }
+<<<<<<< HEAD
 
 // class AddSchedule extends StatelessWidget {
 //   const AddSchedule({super.key});
@@ -244,3 +253,5 @@ class GroupCard extends StatelessWidget {
 //     );
 //   }
 // }
+=======
+>>>>>>> 373194c667ad282ac4b413ca31f48b5b1dd26b1e

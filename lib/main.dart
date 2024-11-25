@@ -246,13 +246,14 @@ class _Appstate extends State<App> {
                 ],
               ),
               const SizedBox(
-                height: 30,
+                height: 50,
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Go to FinancialLedger()
                   ElevatedButton(
+                    child: const Text('MY 가계부'),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -260,102 +261,19 @@ class _Appstate extends State<App> {
                             builder: (context) => const FinancialLedger()),
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.black54,
-                      backgroundColor: Colors.white.withOpacity(0.9),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 0, vertical: 25), // 패딩
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20), // 모서리 둥글기
-                      ),
-                    ),
-                    child: const Row(
-                      children: [
-                        SizedBox(
-                          width: 25,
-                        ),
-                        Text(
-                          'MY \n가계부',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(
-                          width: 40,
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            SizedBox(
-                              height: 50,
-                            ),
-                            Icon(
-                              Icons.arrow_forward_ios, // 화살표 아이콘
-                              size: 20,
-                              color: Color(0xFFFFB2A5),
-                            ),
-                          ],
-                        ),
-                        SizedBox(
-                          width: 20,
-                        )
-                      ],
-                    ),
                   ),
                   const SizedBox(
                     width: 10,
                   ),
                   // Go to FriendList()
                   ElevatedButton(
+                    child: const Text('MY 친구 목록'),
                     onPressed: () {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) => const FriendList()));
                     },
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.black54,
-                      backgroundColor: Colors.white.withOpacity(0.9), // 텍스트 색상
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 0, vertical: 25), // 패딩
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20), // 모서리 둥글기
-                      ),
-                    ),
-                    child: const Row(
-                      children: [
-                        SizedBox(
-                          width: 25,
-                        ),
-                        Text(
-                          'MY \n친구목록',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(
-                          width: 25,
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            SizedBox(
-                              height: 50,
-                            ),
-                            Icon(
-                              Icons.arrow_forward_ios, // 화살표 아이콘
-                              size: 20,
-                              color: Color(0xFFFFB2A5),
-                            ),
-                          ],
-                        ),
-                        SizedBox(
-                          width: 20,
-                        )
-                      ],
-                    ),
                   )
                 ],
               ),
@@ -364,8 +282,10 @@ class _Appstate extends State<App> {
               ),
               // Go to GroupList()
               ElevatedButton(
+                child: const Text('MY 모임 목록'),
                 onPressed: () {
                   FirebaseAuth.instance.signOut();
+                  Navigator.push(
                   Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -464,8 +384,8 @@ class _Appstate extends State<App> {
             ]),
           ),
         ),
-      ],
-    );
+      ),
+    )
   }
 
   void _navigateToNewPage(BuildContext context) {

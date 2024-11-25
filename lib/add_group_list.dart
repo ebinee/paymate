@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-//import 'package:paymate/main.dart';
 import 'package:paymate/header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-//import 'package:intl/intl.dart';
 import 'groupchat.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -31,7 +29,6 @@ class _AddGroupList extends State<AddGroupList> {
   }
 
   Future<void> fetchFriends() async {
-    //User? user = FirebaseAuth.instance.currentUser;
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
     DocumentSnapshot snapshot1 =
@@ -39,7 +36,6 @@ class _AddGroupList extends State<AddGroupList> {
     if (snapshot1.exists) {
       final data = snapshot1.data() as Map<String, dynamic>;
       setState(() {
-        //userId = data['id'] ?? 'Unknown ID';
         userName = data['name'] ?? 'Unknown Name';
       });
     }
@@ -53,7 +49,6 @@ class _AddGroupList extends State<AddGroupList> {
     final List<Map<String, dynamic>> userFriends = snapshot.docs.map((doc) {
       final data = doc.data() as Map<String, dynamic>;
       return {
-        //'id': data['id'] ?? 'Unknown',
         'name': data['name'] ?? 'Unknown',
         'email': data['email'] ?? 'Unknown',
       };
@@ -68,32 +63,45 @@ class _AddGroupList extends State<AddGroupList> {
   }
 
   Future<void> fetchUidsForFriends() async {
-    for (var individual in friends) {
-      final email = individual['email'];
-      if (email != null) {
-        final uid = await getUidByEmail(email); // UID 검색
-        setState(() {
-          individual['Uid'] = uid ?? 'UID not found'; // UID 추가
-        });
-      }
-    }
+    final emails = friends
+        .map((getEmail) => getEmail['email'])
+        .whereType<String>()
+        .toList();
+
+    final emailToUidMap = await getUidsByEmails(emails);
+
+    setState(() {
+      friends = friends.map((getEmail) {
+        final email = getEmail['email'];
+        final uid = emailToUidMap[email];
+        return {
+          ...getEmail,
+          'Uid': uid ?? 'UID not found',
+        }..remove('email'); // email 필드 제거
+      }).toList();
+    });
   }
 
-  Future<String?> getUidByEmail(String email) async {
+  Future<Map<String, String?>> getUidsByEmails(List<String> emails) async {
     try {
       QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('user')
-          .where('email', isEqualTo: email)
-          .limit(1)
+          .where('email', whereIn: emails) // 여러 이메일로 쿼리
           .get();
 
-      if (snapshot.docs.isNotEmpty) {
-        return snapshot.docs.first.id; // UID 반환
+      final Map<String, String?> emailToUidMap = {};
+      for (var doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        final email = data['email'] as String?;
+        if (email != null) {
+          emailToUidMap[email] = doc.id;
+        }
       }
-      return null;
+
+      return emailToUidMap;
     } catch (e) {
-      print("Error fetching UID by email: $e");
-      return null;
+      // print("Error fetching UIDs by emails: $e");
+      return {};
     }
   }
 
@@ -132,10 +140,9 @@ class _AddGroupList extends State<AddGroupList> {
             Container(
               padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
-                color: Colors.transparent, // 투명
-                borderRadius: BorderRadius.circular(12.0), // 모서리
-                border: Border.all(
-                    color: const Color(0xFFFFB2A5), width: 1.0), // 테두리
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(12.0),
+                border: Border.all(color: const Color(0xFFFFB2A5), width: 1.0),
               ),
               width: double.infinity,
               child: Column(
@@ -229,11 +236,6 @@ class _AddGroupList extends State<AddGroupList> {
                                       fontSize: 16.0,
                                       fontWeight: FontWeight.bold),
                                 ),
-                                /*Text(
-                                  friends[index]['id']!,
-                                  style: const TextStyle(
-                                      fontSize: 14.0, color: Colors.grey),
-                                ),*/
                               ],
                             ),
                           ),
@@ -259,8 +261,8 @@ class _AddGroupList extends State<AddGroupList> {
                           'schedule': [],
                           'members': [
                                 {
-                                  'name': _user?.displayName,
                                   'Uid': _user?.uid,
+                                  'name': userName,
                                 } as Map<String, dynamic>
                               ] +
                               selectedProfiles,
@@ -275,13 +277,11 @@ class _AddGroupList extends State<AddGroupList> {
                               builder: (context) => GroupChat(
                                 meetingName: meetingName,
                                 groupId: groupId,
-                                user:_user,
                               ),
                             ),
                           );
                         }
                       } catch (e) {
-                        // 에러 핸들링 (예: 스낵바로 에러 메시지 표시)
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('모임 생성 실패: $e')),
