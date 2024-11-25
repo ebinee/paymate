@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:paymate/add_day_expense.dart';
 import 'package:paymate/header.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -61,11 +62,31 @@ class _DayExpenseState extends State<DayExpense> {
       case '식비':
         return const Icon(Icons.local_dining_rounded);
       case '쇼핑':
-        return const Icon(Icons.shopping_bag_rounded);
+        return const Icon(Icons.shopping_cart_rounded);
       case '카페/간식':
-        return const Icon(Icons.coffee_rounded);
+        return const Icon(Icons.local_cafe_rounded);
+      case '편의점/잡화':
+        return const Icon(Icons.shopping_bag_rounded);
+      case '취미/여가':
+        return const Icon(Icons.sports_esports_rounded);
+      case '의료/건강':
+        return const Icon(Icons.local_hospital_rounded);
+      case '교통':
+        return const Icon(Icons.directions_bus_rounded);
+      case '미용':
+        return const Icon(Icons.brush_rounded);
+      case '여행':
+        return const Icon(Icons.flight_rounded);
+      case '술/유흥':
+        return const Icon(Icons.local_bar_rounded);
+      case '저축':
+        return const Icon(Icons.savings_rounded);
+      case '교육':
+        return const Icon(Icons.school_rounded);
+      case '공과금':
+        return const Icon(Icons.receipt);
       default:
-        return const Icon(Icons.image);
+        return const Icon(Icons.dataset_rounded);
     }
   }
 
@@ -108,7 +129,7 @@ class _DayExpenseState extends State<DayExpense> {
                 height: 20,
               ),
               Container(
-                width: 300,
+                width: 350,
                 height: 90,
                 decoration: BoxDecoration(
                   border: Border.all(color: const Color(0xFFFFB2A5)),
@@ -180,7 +201,7 @@ class _DayExpenseState extends State<DayExpense> {
                   return Column(
                     children: [
                       Container(
-                        width: 300,
+                        width: 350,
                         height: 50,
                         decoration: BoxDecoration(
                           border: Border.all(color: const Color(0xFFFFB2A5)),
@@ -249,12 +270,25 @@ class _DayExpenseState extends State<DayExpense> {
                           },
                         ),
                       ),
-                      const Row(
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.add_rounded),
-                          Text('지출 추가'),
+                          TextButton.icon(
+                            icon: const Icon(Icons.add_rounded),
+                            label: const Text(
+                              '지출 추가',
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => AddDayExpense(
+                                            selectedDate: _selectedDay,
+                                          )));
+                            },
+                          ),
                         ],
-                      )
+                      ),
                     ],
                   );
                 },
