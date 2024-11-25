@@ -9,9 +9,6 @@ class MyPage extends StatefulWidget {
 }
 
 class MyPageState extends State<MyPage> {
-  // final String id;
-  // final String name;
-
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
@@ -25,10 +22,6 @@ class MyPageState extends State<MyPage> {
           children: <Widget>[
             Icon(Icons.person_pin, size: 300, color: Colors.pinkAccent),
             SizedBox(height: 10),
-            /*Text(name, style: const TextStyle(fontSize: 40)),
-            const SizedBox(height: 5),
-            Text('ID : $id', style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 20),*/
           ],
         ),
       ),

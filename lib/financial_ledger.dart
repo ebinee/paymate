@@ -132,7 +132,7 @@ class FinancialLedgerState extends State<FinancialLedger> {
                       border: Border.all(color: const Color(0xFFFFB2A5)),
                       borderRadius: BorderRadius.circular(10)),
                   child: Column(
-                    children: sorted.take(4).map((entry) {
+                    children: sortedCategoryExpense.take(4).map((entry) {
                       double percent = entry.value / totalExpense;
                       return CategoryBar(
                           categoryPercent: percent,
