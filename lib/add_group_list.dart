@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-//import 'package:paymate/main.dart';
 import 'package:paymate/header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-//import 'package:intl/intl.dart';
 import 'groupchat.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AddGroupList extends StatefulWidget {
-  const AddGroupList({super.key});
+  final User? user;
+  const AddGroupList({
+    super.key,
+    required this.user,
+  });
 
   @override
   State<AddGroupList> createState() => _AddGroupList();
@@ -14,35 +17,92 @@ class AddGroupList extends StatefulWidget {
 
 class _AddGroupList extends State<AddGroupList> {
   List<Map<String, dynamic>> friends = [];
+  //String userId = '';
+  String userName = '';
+  User? _user;
 
   @override
   void initState() {
     super.initState();
+    _user = widget.user;
     fetchFriends();
   }
 
-  void fetchFriends() {
-    // Firestore의 'user' 컬렉션 참조
-    CollectionReference friendsCollection =
-        FirebaseFirestore.instance.collection('user');
+  Future<void> fetchFriends() async {
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    // 실시간 데이터 스트림을 구독
-    friendsCollection.snapshots().listen((snapshot) {
-      // 데이터를 List<Map<String, dynamic>>로 변환
-      List<Map<String, dynamic>> fetchedFriends = snapshot.docs.map((doc) {
-        return {
-          'id': doc['id'], // 문서 ID
-          'name': doc['name'], // 'name' 필드
-        };
-      }).toList();
-
-      // 상태 업데이트
+    DocumentSnapshot snapshot1 =
+        await firestore.collection('user').doc(_user?.email).get();
+    if (snapshot1.exists) {
+      final data = snapshot1.data() as Map<String, dynamic>;
       setState(() {
-        friends = fetchedFriends;
+        userName = data['name'] ?? 'Unknown Name';
       });
-    }, onError: (e) {
-      print("그룹 데이터를 가져오는 중 오류 발생: $e");
+    }
+
+    QuerySnapshot snapshot = await firestore
+        .collection('user')
+        .doc(_user?.email)
+        .collection('friends')
+        .get();
+
+    final List<Map<String, dynamic>> userFriends = snapshot.docs.map((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      return {
+        'name': data['name'] ?? 'Unknown',
+        'email': data['email'] ?? 'Unknown',
+      };
+    }).toList();
+
+    setState(() {
+      friends.addAll(userFriends);
     });
+
+    // 친구 리스트에서 UID 가져오기
+    await fetchUidsForFriends();
+  }
+
+  Future<void> fetchUidsForFriends() async {
+    final emails = friends
+        .map((getEmail) => getEmail['email'])
+        .whereType<String>()
+        .toList();
+
+    final emailToUidMap = await getUidsByEmails(emails);
+
+    setState(() {
+      friends = friends.map((getEmail) {
+        final email = getEmail['email'];
+        final uid = emailToUidMap[email];
+        return {
+          ...getEmail,
+          'Uid': uid ?? 'UID not found',
+        }..remove('email'); // email 필드 제거
+      }).toList();
+    });
+  }
+
+  Future<Map<String, String?>> getUidsByEmails(List<String> emails) async {
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('user')
+          .where('email', whereIn: emails) // 여러 이메일로 쿼리
+          .get();
+
+      final Map<String, String?> emailToUidMap = {};
+      for (var doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        final email = data['email'] as String?;
+        if (email != null) {
+          emailToUidMap[email] = doc.id;
+        }
+      }
+
+      return emailToUidMap;
+    } catch (e) {
+      // print("Error fetching UIDs by emails: $e");
+      return {};
+    }
   }
 
   String meetingName = ''; // 모임 이름
@@ -80,10 +140,9 @@ class _AddGroupList extends State<AddGroupList> {
             Container(
               padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
-                color: Colors.transparent, // 투명
-                borderRadius: BorderRadius.circular(12.0), // 모서리
-                border: Border.all(
-                    color: const Color(0xFFFFB2A5), width: 1.0), // 테두리
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(12.0),
+                border: Border.all(color: const Color(0xFFFFB2A5), width: 1.0),
               ),
               width: double.infinity,
               child: Column(
@@ -177,11 +236,6 @@ class _AddGroupList extends State<AddGroupList> {
                                       fontSize: 16.0,
                                       fontWeight: FontWeight.bold),
                                 ),
-                                Text(
-                                  friends[index]['id']!,
-                                  style: const TextStyle(
-                                      fontSize: 14.0, color: Colors.grey),
-                                ),
                               ],
                             ),
                           ),
@@ -205,10 +259,10 @@ class _AddGroupList extends State<AddGroupList> {
                           'date': FieldValue.serverTimestamp(), // 생성 시간 필드 추가
                           'meetingName': meetingName,
                           'schedule': [],
-                          'user': [
+                          'members': [
                                 {
-                                  'name': 'User1',
-                                  'id': 'User1',
+                                  'Uid': _user?.uid,
+                                  'name': userName,
                                 } as Map<String, dynamic>
                               ] +
                               selectedProfiles,
@@ -228,7 +282,6 @@ class _AddGroupList extends State<AddGroupList> {
                           );
                         }
                       } catch (e) {
-                        // 에러 핸들링 (예: 스낵바로 에러 메시지 표시)
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('모임 생성 실패: $e')),

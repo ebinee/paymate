@@ -4,46 +4,60 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'groupchat.dart';
 import 'add_group_list.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class GroupList extends StatefulWidget {
-  const GroupList({super.key});
+  final User? user;
+  const GroupList({
+    super.key,
+    required this.user,
+  });
 
   @override
   State<GroupList> createState() => GroupListState();
 }
 
 class GroupListState extends State<GroupList> {
-  List<Map<String, dynamic>> groups = [];
+  List<Map<String, dynamic>> groups = []; // 찐또배기 group의 doc.id/data
+  User? _user;
 
   @override
   void initState() {
     super.initState();
+    _user = widget.user;
     fetchGroups();
   }
 
   // Firestore에서 실시간 데이터를 가져오는 메서드
-  void fetchGroups() {
-    // Firestore의 'group' 컬렉션 참조
-    CollectionReference groupCollection =
-        FirebaseFirestore.instance.collection('group');
+  Future<void> fetchGroups() async {
+    try {
+      QuerySnapshot snapshot =
+          await FirebaseFirestore.instance.collection('group').get();
+      final userGroup = snapshot.docs.where((doc) {
+        final members = doc['members'] as List<dynamic>?;
+        if (members == null) return false;
 
-    // 실시간 데이터 스트림을 구독
-    groupCollection.snapshots().listen((snapshot) {
-      // 데이터를 List<Map<String, dynamic>>로 변환
-      List<Map<String, dynamic>> fetchedGroups = snapshot.docs.map((doc) {
-        return {
-          'id': doc.id, // 문서 ID
-          'data': doc.data(), // 문서의 모든 필드
-        };
-      }).toList();
-
-      // 상태 업데이트
-      setState(() {
-        groups = fetchedGroups;
+        return members.any((member) {
+          if (member is Map<String, dynamic>) {
+            return member['Uid'] == _user?.uid;
+          } else if (member is String) {
+            return member == _user?.uid;
+          }
+          return false;
+        });
       });
-    }, onError: (e) {
-      print("그룹 데이터를 가져오는 중 오류 발생: $e");
-    });
+
+      setState(() {
+        groups = userGroup.map((doc) {
+          return {
+            'id': doc.id,
+            'data': doc.data() as Map<String, dynamic>,
+          };
+        }).toList();
+      });
+    } catch (e) {
+      // print("그룹 데이터를 가져오는 중 오류 발생: $e");
+    }
   }
 
   @override
@@ -54,17 +68,17 @@ class GroupListState extends State<GroupList> {
       body: SingleChildScrollView(
           padding: const EdgeInsets.all(30.0),
           child: Column(
-            //crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               GestureDetector(
                 onTap: () {
                   // 새로운 모임 추가 기능
                   Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            const AddGroupList()), // AddGroupList
-                  );
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => AddGroupList(
+                                user: _user,
+                              )) // AddGroupList
+                      );
                 },
                 child: Container(
                   height: 80,
@@ -89,17 +103,23 @@ class GroupListState extends State<GroupList> {
                   return GestureDetector(
                     onTap: () {},
                     child: GroupCard(
-                      groupName:
+                      meetingName:
                           groups[index]['data']['meetingName'] ?? 'Unknown',
                       date: groups[index]['data']['date'] is Timestamp
                           ? groups[index]['data']['date'] as Timestamp
                           : Timestamp.now(),
-                      friends: (groups[index]['data']['user'] != null)
-                          ? (groups[index]['data']['user'] as List<dynamic>)
-                              .map<String>((user) =>
-                                  user['name'] ??
-                                  'Unknown') // 명시적으로 List<String>으로 변환
-                              .toList()
+                      friends: (groups[index]['data']['members'] != null)
+                          ? (groups[index]['data']['members'] as List<dynamic>)
+                              .map<String>((user) {
+                              if (user is Map<String, dynamic>) {
+                                // Map 형태라면 'name' 필드 반환
+                                return user['name'] ?? 'Unknown';
+                              } else if (user is String) {
+                                // 요소가 문자열(String)이라면 그대로 반환
+                                return user;
+                              }
+                              return 'Unknown'; // 예상하지 못한 타입일 경우 기본값 반환
+                            }).toList()
                           : <String>[],
                       groupId: groups[index]['id'],
                     ),
@@ -113,7 +133,7 @@ class GroupListState extends State<GroupList> {
 }
 
 class GroupCard extends StatelessWidget {
-  final String groupName;
+  final String meetingName;
   final Timestamp date;
   final List<String> friends;
   final String groupId;
@@ -121,7 +141,7 @@ class GroupCard extends StatelessWidget {
 
   const GroupCard({
     super.key,
-    required this.groupName,
+    required this.meetingName,
     required this.date,
     required this.friends,
     required this.groupId,
@@ -141,17 +161,11 @@ class GroupCard extends StatelessWidget {
           if (docSnapshot.exists) {
             final data = docSnapshot.data();
             if (data != null) {
-              /*
-              List<Map<String, dynamic>> users =
-                  List<Map<String, dynamic>>.from(data['user'] ?? []);
-              List<Map<String, dynamic>> schedule =
-                  List<Map<String, dynamic>>.from(data['schedule'] ?? []);*/
-
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => GroupChat(
-                    meetingName: groupName,
+                    meetingName: meetingName,
                     groupId: groupId,
                   ),
                 ),
@@ -185,7 +199,7 @@ class GroupCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                groupName,
+                meetingName,
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                 ),
@@ -193,7 +207,6 @@ class GroupCard extends StatelessWidget {
               const SizedBox(height: 8.0),
               Text(
                 ' ${friends.join(', ')}',
-                //"User",
                 style: const TextStyle(
                   fontSize: 12,
                   color: Color(0xFF646464),
