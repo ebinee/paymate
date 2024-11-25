@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:paymate/header.dart';
+import 'package:paymate/new_page.dart';
 
 class FriendList extends StatefulWidget {
   const FriendList({super.key});
@@ -22,7 +23,10 @@ class FriendListState extends State<FriendList> {
 
   Future<void> _fetchData() async {
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
-    QuerySnapshot snapshot = await firestore.collection('myuser').get();
+    QuerySnapshot snapshot = await firestore
+        .collection('user')
+        .where('email', isEqualTo: 'soome4514@gmail.com')
+        .get();
 
     final List<Map<String, dynamic>> friends = snapshot.docs.map((doc) {
       final data = doc.data() as Map<String, dynamic>;
@@ -127,9 +131,22 @@ class FriendListState extends State<FriendList> {
           await firestore.collection('user').where('id', isEqualTo: id).get();
 
       if (querySnapshot.docs.isNotEmpty) {
+        final String friendUid = querySnapshot.docs.first.id;
         final Map<String, dynamic> data =
             querySnapshot.docs.first.data() as Map<String, dynamic>;
         final String name = data['name'] ?? 'Unknown';
+
+        const String currentUserUid = "soome4514@gmail.com";
+
+        await firestore
+            .collection('user')
+            .doc(currentUserUid)
+            .collection('friends')
+            .doc(friendUid) // 친구 UID를 문서 ID로 사용 (고유 값 보장)
+            .set({
+          'name': name,
+          'id': id,
+        });
 
         setState(() {
           _friends.add({'name': name, 'id': id});
@@ -391,36 +408,6 @@ class FriendListState extends State<FriendList> {
       context,
       MaterialPageRoute(
           builder: (context) => const NewPage(id: "TNGUSDL", name: "이수현")),
-    );
-  }
-}
-
-class NewPage extends StatelessWidget {
-  final String id;
-  final String name;
-
-  const NewPage({super.key, required this.id, required this.name});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const Header(
-        headerTitle: "내 정보",
-      ),
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Icon(Icons.person_pin, size: 300, color: Colors.pinkAccent),
-            const SizedBox(height: 10),
-            Text(name, style: const TextStyle(fontSize: 40)),
-            const SizedBox(height: 5),
-            Text('ID : $id', style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
     );
   }
 }
