@@ -195,15 +195,7 @@ class AddGroupList extends StatefulWidget {
 }
 
 class _AddGroupList extends State<AddGroupList> {
-  List<Map<String, dynamic>> friends = [
-    /*{'name': '김예빈', 'id': 'MYBIN'},
-    {'name': '한현비', 'id': 'NENEN2YA'},
-    {'name': '이수민', 'id': 'SOOOMBB'},
-    {'name': '박우진', 'id': 'WOOOOOJIN'},
-    {'name': '이강훈', 'id': 'KANGHOOOON'},
-    {'name': '엄마', 'id': 'MAMMI'},
-    */
-  ];
+  List<Map<String, dynamic>> friends = [];
 
   @override
   void initState() {
