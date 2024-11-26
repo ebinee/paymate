@@ -11,7 +11,7 @@ class AddSchedule extends StatefulWidget {
   
 
   const AddSchedule({
-    super.key, 
+    super.key,
     required this.groupId,
     required this.user,
     });
@@ -44,6 +44,7 @@ class AddScheduleState extends State<AddSchedule> {
     '기타'
   ];
 
+  @override
   @override
   void initState() {
     super.initState();

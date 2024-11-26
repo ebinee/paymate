@@ -1,0 +1,5 @@
+{
+    "java.compile.nullAnalysis.mode": "disabled"
+    "git.ignoreLimitWarning": true,
+    "cmake.sourceDirectory": "C:/paymate/linux"
+}

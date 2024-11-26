@@ -60,6 +60,7 @@ class GroupListState extends State<GroupList> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -184,7 +185,7 @@ class GroupCard extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 8),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: backgroundColor ?? const Color(0x00ffb2a5).withOpacity(0.2),
+          color: backgroundColor ?? const Color(0xFFFFB2A5).withOpacity(0.2),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(

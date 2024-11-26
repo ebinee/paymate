@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-//import 'package:paymate/main.dart';
 import 'package:paymate/header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-//import 'package:intl/intl.dart';
 import 'groupchat.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -18,9 +16,10 @@ class AddGroupList extends StatefulWidget {
 }
 
 class _AddGroupList extends State<AddGroupList> {
-  List<Map<String, dynamic>> friends = [];
-  //String userId = '';
+  List<Map<String, dynamic>> friends = []; // login 사용자의 친구 리스트
   String userName = '';
+  String userUid = '';
+  bool isCompeleted = false;
   User? _user;
 
   @override
@@ -31,7 +30,6 @@ class _AddGroupList extends State<AddGroupList> {
   }
 
   Future<void> fetchFriends() async {
-    //User? user = FirebaseAuth.instance.currentUser;
     final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
     DocumentSnapshot snapshot1 =
@@ -39,8 +37,8 @@ class _AddGroupList extends State<AddGroupList> {
     if (snapshot1.exists) {
       final data = snapshot1.data() as Map<String, dynamic>;
       setState(() {
-        //userId = data['id'] ?? 'Unknown ID';
         userName = data['name'] ?? 'Unknown Name';
+        userUid = data['Uid'] ?? 'Unknown Uid';
       });
     }
 
@@ -53,48 +51,14 @@ class _AddGroupList extends State<AddGroupList> {
     final List<Map<String, dynamic>> userFriends = snapshot.docs.map((doc) {
       final data = doc.data() as Map<String, dynamic>;
       return {
-        //'id': data['id'] ?? 'Unknown',
-        'name': data['name'] ?? 'Unknown',
-        'email': data['email'] ?? 'Unknown',
+        'name': data['name'] ?? 'Unknown Name',
+        'Uid': data['Uid'] ?? 'Unknown Uid',
       };
     }).toList();
 
     setState(() {
       friends.addAll(userFriends);
     });
-
-    // 친구 리스트에서 UID 가져오기
-    await fetchUidsForFriends();
-  }
-
-  Future<void> fetchUidsForFriends() async {
-    for (var individual in friends) {
-      final email = individual['email'];
-      if (email != null) {
-        final uid = await getUidByEmail(email); // UID 검색
-        setState(() {
-          individual['Uid'] = uid ?? 'UID not found'; // UID 추가
-        });
-      }
-    }
-  }
-
-  Future<String?> getUidByEmail(String email) async {
-    try {
-      QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection('user')
-          .where('email', isEqualTo: email)
-          .limit(1)
-          .get();
-
-      if (snapshot.docs.isNotEmpty) {
-        return snapshot.docs.first.id; // UID 반환
-      }
-      return null;
-    } catch (e) {
-      print("Error fetching UID by email: $e");
-      return null;
-    }
   }
 
   String meetingName = ''; // 모임 이름
@@ -128,14 +92,13 @@ class _AddGroupList extends State<AddGroupList> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(height: 20),
+            const SizedBox(height: 0),
             Container(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(10.0),
               decoration: BoxDecoration(
-                color: Colors.transparent, // 투명
-                borderRadius: BorderRadius.circular(12.0), // 모서리
-                border: Border.all(
-                    color: const Color(0xFFFFB2A5), width: 1.0), // 테두리
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(12.0),
+                border: Border.all(color: const Color(0xFFFFB2A5), width: 1.0),
               ),
               width: double.infinity,
               child: Column(
@@ -163,33 +126,41 @@ class _AddGroupList extends State<AddGroupList> {
               ),
             ),
             const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                if (selectedProfiles.isEmpty)
-                  const SizedBox(height: 68) // 기본 공간 유지
-                else
-                  ...selectedProfiles.map((friend) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                      child: Column(
-                        children: [
-                          const CircleAvatar(
-                            radius: 30,
-                            backgroundColor: Colors.grey,
-                            backgroundImage: NetworkImage(
-                                'https://via.placeholder.com/150'), // 프로필 이미지 URL 아이콘으로 교체 가능
+            Container(
+              alignment: Alignment.centerLeft,
+              height: 100, // Row가 차지할 높이를 명시적으로 지정
+              child: SingleChildScrollView(
+                // Avatar가 가로 Overflow 발생하는 거 막기 위함.
+                scrollDirection: Axis.horizontal, // 가로 방향 스크롤 활성화
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    if (selectedProfiles.isEmpty)
+                      const SizedBox(height: 68) // 기본 공간 유지
+                    else
+                      ...selectedProfiles.map((friend) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                          child: Column(
+                            children: [
+                              const CircleAvatar(
+                                radius: 30,
+                                backgroundColor: Colors.grey,
+                                backgroundImage: NetworkImage(
+                                    'https://via.placeholder.com/150'), // 프로필 이미지 URL 아이콘으로 교체 가능
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                friend['name']!,
+                                style: const TextStyle(fontSize: 14.0),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            friend['name']!,
-                            style: const TextStyle(fontSize: 14.0),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-              ],
+                        );
+                      }),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 20),
             Expanded(
@@ -229,11 +200,6 @@ class _AddGroupList extends State<AddGroupList> {
                                       fontSize: 16.0,
                                       fontWeight: FontWeight.bold),
                                 ),
-                                /*Text(
-                                  friends[index]['id']!,
-                                  style: const TextStyle(
-                                      fontSize: 14.0, color: Colors.grey),
-                                ),*/
                               ],
                             ),
                           ),
@@ -255,12 +221,13 @@ class _AddGroupList extends State<AddGroupList> {
                         final DocumentReference docRef =
                             await firestore.collection('group').add({
                           'date': FieldValue.serverTimestamp(), // 생성 시간 필드 추가
+                          'isCompleted': isCompeleted,
                           'meetingName': meetingName,
                           'schedule': [],
                           'members': [
                                 {
-                                  'name': _user?.displayName,
                                   'Uid': _user?.uid,
+                                  'name': userName,
                                 } as Map<String, dynamic>
                               ] +
                               selectedProfiles,
@@ -281,7 +248,6 @@ class _AddGroupList extends State<AddGroupList> {
                           );
                         }
                       } catch (e) {
-                        // 에러 핸들링 (예: 스낵바로 에러 메시지 표시)
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('모임 생성 실패: $e')),

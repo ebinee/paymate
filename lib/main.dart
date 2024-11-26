@@ -4,7 +4,6 @@ import 'package:paymate/friend_list.dart';
 import 'package:paymate/group_list.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:paymate/sign_in.dart';
-import 'package:paymate/sign_up.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -98,7 +97,9 @@ class _Appstate extends State<App> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) =>  GroupList(user: user,)));
+                          builder: (context) => GroupList(
+                                user: user,
+                              )));
                 },
               ),
               const SizedBox(

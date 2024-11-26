@@ -76,7 +76,7 @@ bool ? isCompeleted;
     fetchGroupUsers(); 
     fetchSchedule();
     fetchIsCompleted();
-        _user = widget.user;
+    _user = widget.user;
          
   }
 
@@ -111,8 +111,8 @@ Future<void> fetchGroupUsers() async {
 }
 
 
-void fetchSchedule() {
-  String groupId = widget.groupId;
+  void fetchSchedule() {
+    String groupId = widget.groupId;
 
   var scheduleCollection = FirebaseFirestore.instance.collection('group').doc(groupId);
 
@@ -238,10 +238,10 @@ if (groupuser.isNotEmpty)
   ),
             // 일정 목록 표시
             Expanded(
-              child:ListView.builder(
+              child: ListView.builder(
                 itemCount: schedule.length,
-                itemBuilder: (context,index){
-                final scheduleItem=schedule[index];
+                itemBuilder: (context, index) {
+                  final scheduleItem = schedule[index];
                   return Padding(
                   padding: const EdgeInsets.only(bottom: 20.0),
                   child: Row(
@@ -366,7 +366,7 @@ if (groupuser.isNotEmpty)
                 );
                 },
               ),
-            )            
+            )
           ],
         ),
       ),
