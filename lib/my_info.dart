@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:paymate/header.dart';
 import 'package:paymate/sign_in.dart';
 import 'package:paymate/enquiry.dart';
+import 'package:paymate/how_to_use.dart';
 
 class MyInfo extends StatefulWidget {
   const MyInfo({super.key});
@@ -20,78 +21,6 @@ class _MyInfoState extends State<MyInfo> {
   void initState() {
     super.initState();
     _fetchData();
-  }
-
-  void _showDeleteConfirmationDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: const Color(0xffffffff),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          titlePadding: EdgeInsets.zero,
-          title: const Padding(
-            padding: EdgeInsets.all(20),
-            child: Text(
-              '회원탈퇴',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Color(0xff646464),
-                fontSize: 20,
-              ),
-            ),
-          ),
-          content: const Text(
-            '정말 회원탈퇴 하시겠습니까 ?',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Color(0xff646464),
-              fontSize: 20,
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xffffffff),
-                backgroundColor: const Color(0xff646464),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 50, vertical: 12),
-                textStyle: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w100,
-                ),
-              ),
-              child: const Text('취소'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xffffffff),
-                backgroundColor: const Color(0xff646464),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 50, vertical: 12),
-                textStyle: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w100,
-                ),
-              ),
-              child: const Text('탈퇴'),
-              onPressed: () {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SignIn()),
-                  (route) => false,
-                );
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Future<void> _fetchData() async {
@@ -111,6 +40,7 @@ class _MyInfoState extends State<MyInfo> {
 
   @override
   Widget build(BuildContext context) {
+    User? user = FirebaseAuth.instance.currentUser;
     return Scaffold(
         appBar: const Header(headerTitle: "내 정보"),
         backgroundColor: Colors.white,
@@ -125,7 +55,7 @@ class _MyInfoState extends State<MyInfo> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(
-                          height: 20,
+                          height: 25,
                         ),
                         Container(
                           decoration: BoxDecoration(
@@ -176,7 +106,7 @@ class _MyInfoState extends State<MyInfo> {
                           ),
                         ),
                         const SizedBox(
-                          height: 20,
+                          height: 30,
                         ),
                         const Divider(
                           color: Color(0xFFF2E8DA),
@@ -227,16 +157,25 @@ class _MyInfoState extends State<MyInfo> {
                         const SizedBox(
                           height: 20,
                         ),
-                        const Row(children: [
-                          SizedBox(
+                        Row(children: [
+                          const SizedBox(
                             width: 25,
                           ),
-                          Text(
-                            "비밀번호 변경",
+                          const Text(
+                            "이메일",
                             style: TextStyle(
                               fontSize: 18,
                             ),
                           ),
+                          const Spacer(),
+                          Text(
+                            "${user?.email}",
+                            style: const TextStyle(
+                                fontSize: 18, color: Colors.grey),
+                          ),
+                          const SizedBox(
+                            width: 25,
+                          )
                         ]),
                         const SizedBox(
                           height: 8,
@@ -317,7 +256,7 @@ class _MyInfoState extends State<MyInfo> {
                           ],
                         ),
                         const SizedBox(
-                          height: 8,
+                          height: 10,
                         ),
                         Row(children: [
                           const SizedBox(
@@ -353,13 +292,17 @@ class _MyInfoState extends State<MyInfo> {
                           ),
                           TextButton(
                             onPressed: () {
-                              _showDeleteConfirmationDialog();
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const HowToUse()),
+                              );
                             },
                             style: TextButton.styleFrom(
                               padding: EdgeInsets.zero,
                             ),
                             child: const Text(
-                              '회원탈퇴',
+                              '어플리케이션 사용법',
                               style: TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.w100,

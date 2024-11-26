@@ -191,7 +191,7 @@ class _Appstate extends State<App> {
               },
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.black54,
-                backgroundColor: const Color(0xFFFFB2A5).withOpacity(0.7),
+                backgroundColor: const Color(0xFFFFB2A5),
                 padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),

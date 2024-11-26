@@ -17,6 +17,7 @@ class FriendListState extends State<FriendList> {
   final List<Map<String, dynamic>> _friends = [];
   String userId = '';
   String userName = '';
+  String userUid = '';
 
   @override
   void initState() {
@@ -35,6 +36,7 @@ class FriendListState extends State<FriendList> {
       setState(() {
         userId = data['id'] ?? 'Unknown ID';
         userName = data['name'] ?? 'Unknown Name';
+        userUid = data['Uid'] ?? 'Unknown Uid';
       });
     }
 
@@ -49,6 +51,7 @@ class FriendListState extends State<FriendList> {
       return {
         'id': data['id'] ?? 'Unknown',
         'name': data['name'] ?? 'Unknown',
+        'Uid': data['Uid'] ?? 'Unknown',
       };
     }).toList();
 
@@ -182,6 +185,7 @@ class FriendListState extends State<FriendList> {
             .collection('friends')
             .doc(friendUid)
             .set({
+          'Uid': userUid,
           'name': name,
           'id': id,
         });
