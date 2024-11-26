@@ -49,6 +49,15 @@ class AddScheduleState extends State<AddSchedule> {
     _user = widget.user;
   }
 
+  String getUserNameByUid(String uid) {
+    // groupuser에서 _user?.uid와 일치하는 유저 찾기
+    final user = groupuser.firstWhere(
+      (element) => element['Uid'] == uid,
+      //orElse: () => '', // 찾을 수 없을 경우 null 반환
+    );
+    return user != null ? user['name'] : ''; // name이 존재하면 반환, 없으면 빈 문자열 반환
+  }
+
   Future<void> fetchGroupUsers() async {
     try {
       String groupId = widget.groupId;
@@ -265,9 +274,8 @@ class AddScheduleState extends State<AddSchedule> {
                             itemBuilder: (context, index) {
                               final sortedGroupUser = List.from(groupuser);
                               sortedGroupUser.sort((a, b) {
-                                if (a['Uid'] == _user?.uid) {
+                                if (a['Uid'] == _user?.uid)
                                   return -1; // '나'를 첫 번째로
-                                }
                                 if (b['Uid'] == _user?.uid) return 1;
                                 return 0;
                               });
@@ -316,7 +324,8 @@ class AddScheduleState extends State<AddSchedule> {
                                       'category': _selectedCategory!,
                                       'Creator': {
                                         'Uid': _user?.uid,
-                                        'name': '이수민'
+                                        'name':
+                                            getUserNameByUid(_user?.uid ?? '')
                                       },
                                       'money': int.parse(
                                           _amountController.text), // 금액은 숫자로 저장
