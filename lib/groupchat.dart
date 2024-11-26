@@ -7,7 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 
 class GroupChat extends StatefulWidget {
-  final String meetingName; 
+  final String meetingName;
   final String groupId;
   final User? user;
 
@@ -43,26 +43,25 @@ class GroupChatState extends State<GroupChat> {
 double calculateTotalAmount(String userUid, List<Map<String,dynamic>> schedules) {
   double totalAmount = 0;
 
-  for (var schedule in schedules) {
+    for (var schedule in schedules) {
+      // schedule_user에서 해당 userId가 포함된 경우만 계산
+      final users = schedule['schedule_user'] ?? [];
+      final creatorUid = schedule['Creator']?['Uid'];
+      if ((users
+          .any((scheduleuser) => scheduleuser['Uid'] == widget.user?.uid))) {
+        if (users.any((scheduleuser) => scheduleuser['Uid'] == userUid)) {
+          final amount = schedule['money'] ?? 0;
 
-    // schedule_user에서 해당 userId가 포함된 경우만 계산
-    final users = schedule['schedule_user'] ?? [];
-    final creatorUid = schedule['Creator']?['Uid'];
-        if((users.any((scheduleuser) => scheduleuser['Uid'] == widget.user?.uid))){
-    if (users.any((scheduleuser) => scheduleuser['Uid'] == userUid)) {
-            final amount = schedule['money'] ?? 0;
-
-      if(userUid==creatorUid){
-        totalAmount -= (amount / users.length);
-      }
-      else if(creatorUid==widget.user?.uid){
-      totalAmount += (amount / users.length); 
+          if (userUid == creatorUid) {
+            totalAmount -= (amount / users.length);
+          } else if (creatorUid == widget.user?.uid) {
+            totalAmount += (amount / users.length);
+          }
+        }
       }
     }
+    return totalAmount;
   }
-}
-  return totalAmount;
-}
 
 List<Map<String, dynamic>> groupuser=[];
 List<Map<String, dynamic>> schedule=[];

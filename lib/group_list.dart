@@ -171,7 +171,7 @@ class GroupCard extends StatelessWidget {
                   builder: (context) => GroupChat(
                     meetingName: meetingName,
                     groupId: groupId,
-                    user:user,
+                    user: user,
                   ),
                 ),
               );

@@ -8,7 +8,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 class AddSchedule extends StatefulWidget {
   final String groupId;
   final User? user;
-  
 
   const AddSchedule({
     super.key,
@@ -46,10 +45,11 @@ class AddScheduleState extends State<AddSchedule> {
 
   @override
   @override
+  @override
   void initState() {
     super.initState();
-    fetchGroupUsers(); 
-    _user=widget.user;
+    fetchGroupUsers();
+    _user = widget.user;
   }
 
 String getUserNameByUid(String uid) {

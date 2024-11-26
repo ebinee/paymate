@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:paymate/header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -33,6 +34,7 @@ class _AddDayExpenseState extends State<AddDayExpense> {
   ];
   String? selectedCategory;
   int currentStep = 0;
+  User? user = FirebaseAuth.instance.currentUser;
 
   final TextEditingController titleController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
@@ -55,12 +57,19 @@ class _AddDayExpenseState extends State<AddDayExpense> {
   }
 
   Future<void> _saveToDatabase() async {
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('로그인 상태를 확인해주세요.')),
+      );
+      return;
+    }
     try {
       await FirebaseFirestore.instance.collection('expense').add({
         'title': titleController.text,
         'money': int.parse(amountController.text),
         'category': selectedCategory,
         'date': Timestamp.fromDate(widget.selectedDate),
+        'uid': '${user?.uid}',
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

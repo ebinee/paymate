@@ -90,5 +90,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'paymate-3e62b.appspot.com',
     measurementId: 'G-3888GNNWFQ',
   );
-
 }
