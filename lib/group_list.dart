@@ -29,12 +29,15 @@ class GroupListState extends State<GroupList> {
   }
 
   // Firestore에서 실시간 데이터를 가져오는 메서드
-  Future<void> fetchGroups() async {
-    try {
-      QuerySnapshot snapshot =
-          await FirebaseFirestore.instance.collection('group').get();
+Future<void> fetchGroups() async {
+  try {
+    FirebaseFirestore.instance
+        .collection('group')
+        .snapshots()
+        .listen((snapshot) {
       final userGroup = snapshot.docs.where((doc) {
         final members = doc['members'] as List<dynamic>?;
+
         if (members == null) return false;
 
         return members.any((member) {
@@ -55,10 +58,11 @@ class GroupListState extends State<GroupList> {
           };
         }).toList();
       });
-    } catch (e) {
-      print("그룹 데이터를 가져오는 중 오류 발생: $e");
-    }
+    });
+  } catch (e) {
+    print("그룹 데이터를 가져오는 중 오류 발생: $e");
   }
+}
 
 
   @override

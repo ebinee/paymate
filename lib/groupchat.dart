@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:paymate/group_list.dart';
 import 'package:paymate/header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:paymate/add_schedule.dart';
@@ -153,18 +154,37 @@ Future<void> fetchIsCompleted() async {
   @override
   Widget build(BuildContext context) {
 
-    return Scaffold(
-      appBar: Header(headerTitle: widget.meetingName),
-      backgroundColor: Colors.white,
-      body: Container(
-        color: Colors.white,
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          children: [
+return Scaffold(
+  appBar: AppBar(
+    titleSpacing: -10.0,
+    title: Text(widget.meetingName, style: const TextStyle(
+            color: Color(0xFF646464),
+            fontSize: 15,)),
+    backgroundColor: Colors.white,
+    elevation: 0,
+    leading: IconButton(
+      icon: const Icon(Icons.arrow_back_ios, color: Colors.black,size:20,),
+      onPressed: () {
+        // 특정 페이지로 이동
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => GroupList(user: _user)),
+        );
+      },
+    ),
+  ),
+  backgroundColor: Colors.white,
+  body: Container(
+    color: Colors.white,
+    padding: const EdgeInsets.all(10.0),
+    child: Column(
+      children: [
             // 선택된 프로필 표시
 if (groupuser.isNotEmpty)
   Padding(
     padding: const EdgeInsets.symmetric(vertical: 10.0),
+//    child:SingleChildScrollView(
+//      scrollDirection:Axis.horizontal,
     child: Row(
       children: [
         ...groupuser
@@ -233,7 +253,8 @@ if (groupuser.isNotEmpty)
           );
         }),
       ],
-    ),
+//    ),
+    )
   ),
             // 일정 목록 표시
             Expanded(
@@ -249,8 +270,8 @@ if (groupuser.isNotEmpty)
                     Container(
                       width: 50,
                       height: 50,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFFFB2A5),
+                      decoration: BoxDecoration(
+                        color: Color(0xFFFFB2A5).withOpacity(0.8),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -267,10 +288,7 @@ if (groupuser.isNotEmpty)
         margin: const EdgeInsets.only(right: 40),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: (scheduleItem['schedule_user'] ?? [])
-              .any((friend) => friend['Uid'] == _user?.uid) 
-          ?const Color(0xFFFFB2A5).withOpacity(0.2)
-          : Colors.white,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
@@ -294,6 +312,9 @@ if (groupuser.isNotEmpty)
           ),
         ),
               const SizedBox(height: 12.0),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child:
               Row(
           children: (() {
     List scheduleUsers = (scheduleItem['schedule_user'] ?? []);
@@ -311,9 +332,10 @@ if (groupuser.isNotEmpty)
                                               const EdgeInsets.only(right: 3.0),
                                           width: 30,
                                           height: 30,
-                                          decoration: const BoxDecoration(
+                                          decoration: BoxDecoration(
                                             shape: BoxShape.circle,
-                                            color: Color(0xFFC1C1C1),
+                                            color: (friend['Uid'] == _user?.uid)
+                                                      ?const Color(0xFFFFB2A5) :const Color(0xFFC1C1C1),
                                           ),
                                           child: Center(
                                             child: Text(
@@ -332,6 +354,7 @@ if (groupuser.isNotEmpty)
                                         );
                                       }).toList();
                                     })(),
+              )
                                   ),
                                 ],
                               ),
