@@ -265,8 +265,9 @@ class AddScheduleState extends State<AddSchedule> {
                             itemBuilder: (context, index) {
                               final sortedGroupUser = List.from(groupuser);
                               sortedGroupUser.sort((a, b) {
-                                if (a['Uid'] == _user?.uid)
+                                if (a['Uid'] == _user?.uid) {
                                   return -1; // '나'를 첫 번째로
+                                }
                                 if (b['Uid'] == _user?.uid) return 1;
                                 return 0;
                               });

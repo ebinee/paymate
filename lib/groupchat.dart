@@ -66,13 +66,14 @@ class GroupChatState extends State<GroupChat> {
   List<Map<String, dynamic>> schedule = [];
   User? _user;
 
-  bool isCompeleted = false;
+  bool? isCompeleted;
 
   @override
   void initState() {
     super.initState();
     fetchGroupUsers();
     fetchSchedule();
+    fetchIsCompleted();
     _user = widget.user;
   }
 
@@ -126,6 +127,28 @@ class GroupChatState extends State<GroupChat> {
     });
   }
 
+  Future<void> fetchIsCompleted() async {
+    try {
+      String groupId = widget.groupId;
+
+      FirebaseFirestore.instance
+          .collection('group')
+          .doc(groupId)
+          .snapshots()
+          .listen((groupDoc) {
+        if (groupDoc.exists) {
+          setState(() {
+            isCompeleted = groupDoc.data()?['isCompeleted'] ?? false;
+          });
+        } else {
+          print('Group document not found');
+        }
+      });
+    } catch (e) {
+      print('Error fetching isCompeleted: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -170,7 +193,7 @@ class GroupChatState extends State<GroupChat> {
                                 fontSize: 12.0,
                               ),
                             ),
-                            SizedBox(height: 30),
+                            SizedBox(height: 15),
                           ],
                         ),
                       );
@@ -206,7 +229,7 @@ class GroupChatState extends State<GroupChat> {
                                 fontSize: 12.0,
                               ),
                             ),
-                            const SizedBox(height: 30),
+                            const SizedBox(height: 15),
                           ],
                         ),
                       );
@@ -240,20 +263,20 @@ class GroupChatState extends State<GroupChat> {
 
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          padding: const EdgeInsets.only(bottom: 1.0),
                           child: Container(
-                            margin: const EdgeInsets.only(right: 30),
+                            margin: const EdgeInsets.only(right: 40),
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
                               color: (scheduleItem['schedule_user'] ?? []).any(
                                       (friend) => friend['Uid'] == _user?.uid)
-                                  ? const Color(0x00ffb2a5).withOpacity(0.2)
+                                  ? const Color(0xFFFFB2A5).withOpacity(0.2)
                                   : Colors.white,
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey.withOpacity(0.1),
-                                  spreadRadius: 3,
+                                  color: Colors.grey.withOpacity(0.2),
+                                  spreadRadius: 1,
                                   blurRadius: 3,
                                   offset: const Offset(0, 3),
                                 ),
@@ -261,17 +284,17 @@ class GroupChatState extends State<GroupChat> {
                             ),
                             child: ListTile(
                               title: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   Text(
                                     scheduleItem['title'],
                                     style: const TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                       color: Color(0xFF646464),
                                     ),
                                   ),
-                                  const SizedBox(height: 8.0),
+                                  const SizedBox(height: 12.0),
                                   Row(
                                     children: (() {
                                       List scheduleUsers =
@@ -289,8 +312,8 @@ class GroupChatState extends State<GroupChat> {
                                         return Container(
                                           margin:
                                               const EdgeInsets.only(right: 3.0),
-                                          width: 30,
-                                          height: 30,
+                                          width: 25,
+                                          height: 25,
                                           decoration: const BoxDecoration(
                                             shape: BoxShape.circle,
                                             color: Color(0xFFC1C1C1),
@@ -334,7 +357,7 @@ class GroupChatState extends State<GroupChat> {
                                     textAlign: TextAlign.right,
                                     style: const TextStyle(
                                       fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+//                fontWeight: FontWeight.bold,
                                       color: Color(0xFF646464),
                                     ),
                                   ),
@@ -379,26 +402,32 @@ class GroupChatState extends State<GroupChat> {
                   right: 100.0), // 아래쪽 여백만 조정하고 양옆 여백도 추가
               child: ElevatedButton(
                 onPressed: () {
-                  setState(() {
-                    isCompeleted = !isCompeleted;
+                  String groupId = widget.groupId;
+                  FirebaseFirestore.instance
+                      .collection('group')
+                      .doc(groupId)
+                      .update({
+                    'isCompeleted': !(isCompeleted ?? false), // 현재 상태 반전
                   });
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isCompeleted
+                  backgroundColor: (isCompeleted ?? false)
                       ? Colors.grey[600]
-                      : const Color(0xFFFFB2A5), // 상태에 따라 색 변경
+                      : const Color(0xFFFFB2A5).withOpacity(0.2), // 상태에 따라 색 변경
+                  shadowColor: Colors.transparent,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 child: Text(
-                  isCompeleted ? '정산 완료' : '정산완료하기', // 상태에 따라 텍스트 변경
+                  (isCompeleted ?? false) ? '정산 완료' : '정산완료하기', // 상태에 따라 텍스트 변경
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color:
-                        isCompeleted ? Colors.white : const Color(0xFF646464),
+                    color: (isCompeleted ?? false)
+                        ? Colors.white
+                        : Colors.grey[600],
                   ),
                 ),
               ),
