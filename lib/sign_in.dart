@@ -18,76 +18,130 @@ class SignInState extends State<SignIn> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        titleSpacing: -10.0,
-        title: const Text("로그인",
-            style: TextStyle(
-              color: Color(0xFF646464),
-              fontSize: 15,
-            )),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 30,
-        ),
-        child: Center(
-          child: Column(
-            children: [
-              TextFormField(
-                textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(
-                  labelText: "이메일",
-                  hintText: "이메일을 입력하세요",
+      resizeToAvoidBottomInset: true,
+      backgroundColor: const Color(0xFFF2E8DA),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 30,
+          ),
+          child: Center(
+            child: Column(
+              children: [
+                const SizedBox(
+                  height: 150,
                 ),
-                controller: _emailController,
-              ),
-              TextFormField(
-                textInputAction: TextInputAction.next,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: "비밀번호",
-                  hintText: "비밀번호를 입력하세요",
+                Image.asset(
+                  'assets/images/paymate_logo.png',
+                  width: 276,
+                  height: 90,
+                  fit: BoxFit.fill,
                 ),
-                controller: _passwordController,
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  String email = _emailController.text.toString();
-                  String password = _passwordController.text.toString();
+                const SizedBox(
+                  height: 30,
+                ),
+                TextFormField(
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white54,
+                    labelText: "이메일",
+                    labelStyle: const TextStyle(
+                      color: Color(0xFF646464),
+                    ),
+                    hintText: "이메일을 입력해주세요",
+                    hintStyle: const TextStyle(
+                      color: Color(0xFF646464),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.fromLTRB(20, 10, 20, 15),
+                  ),
+                  controller: _emailController,
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                TextFormField(
+                  textInputAction: TextInputAction.next,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white54,
+                    labelText: "비밀번호",
+                    labelStyle: const TextStyle(
+                      color: Color(0xFF646464),
+                    ),
+                    hintText: "비밀번호를 입력해주세요",
+                    hintStyle: const TextStyle(
+                      color: Color(0xFF646464),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.fromLTRB(20, 10, 20, 15),
+                  ),
+                  controller: _passwordController,
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    String email = _emailController.text.toString();
+                    String password = _passwordController.text.toString();
 
-                  try {
-                    UserCredential userCredential =
-                        await FirebaseAuth.instance.signInWithEmailAndPassword(
-                      email: email,
-                      password: password,
-                    );
-                    SystemChannels.textInput.invokeMethod('TextInput.hide');
-                    Navigator.pushReplacement(
+                    try {
+                      UserCredential userCredential = await FirebaseAuth
+                          .instance
+                          .signInWithEmailAndPassword(
+                        email: email,
+                        password: password,
+                      );
+                      SystemChannels.textInput.invokeMethod('TextInput.hide');
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const App()),
+                      );
+                    } on FirebaseAuthException catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('?꾩씠???먮뒗 鍮꾨?踰덊샇媛 ?쇱튂?섏? ?딆뒿?덈떎.'),
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF646464),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    fixedSize: const Size(350, 50),
+                    textStyle: const TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 15,
+                    ),
+                  ),
+                  child: const Text("로그인"),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const App()),
+                      MaterialPageRoute(builder: (context) => const SignUp()),
                     );
-                  } on FirebaseAuthException catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('아이디 또는 비밀번호가 일치하지 않습니다.'),
-                      ),
-                    );
-                  }
-                },
-                child: const Text('로그인'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SignUp()),
-                  );
-                },
-                child: const Text('회원가입'),
-              ),
-            ],
+                  },
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFF646464),
+                  ),
+                  child: const Text("회원가입"),
+                ),
+              ],
+            ),
           ),
         ),
       ),
