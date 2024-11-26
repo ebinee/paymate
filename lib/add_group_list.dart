@@ -16,9 +16,10 @@ class AddGroupList extends StatefulWidget {
 }
 
 class _AddGroupList extends State<AddGroupList> {
-  List<Map<String, dynamic>> friends = [];
-  //String userId = '';
+  List<Map<String, dynamic>> friends = []; // login 사용자의 친구 리스트
   String userName = '';
+  String userUid = '';
+  bool isCompeleted = false;
   User? _user;
 
   @override
@@ -37,6 +38,7 @@ class _AddGroupList extends State<AddGroupList> {
       final data = snapshot1.data() as Map<String, dynamic>;
       setState(() {
         userName = data['name'] ?? 'Unknown Name';
+        userUid = data['Uid'] ?? 'Unknown Uid';
       });
     }
 
@@ -49,60 +51,14 @@ class _AddGroupList extends State<AddGroupList> {
     final List<Map<String, dynamic>> userFriends = snapshot.docs.map((doc) {
       final data = doc.data() as Map<String, dynamic>;
       return {
-        'name': data['name'] ?? 'Unknown',
-        'email': data['email'] ?? 'Unknown',
+        'name': data['name'] ?? 'Unknown Name',
+        'Uid': data['Uid'] ?? 'Unknown Uid',
       };
     }).toList();
 
     setState(() {
       friends.addAll(userFriends);
     });
-
-    // 친구 리스트에서 UID 가져오기
-    await fetchUidsForFriends();
-  }
-
-  Future<void> fetchUidsForFriends() async {
-    final emails = friends
-        .map((getEmail) => getEmail['email'])
-        .whereType<String>()
-        .toList();
-
-    final emailToUidMap = await getUidsByEmails(emails);
-
-    setState(() {
-      friends = friends.map((getEmail) {
-        final email = getEmail['email'];
-        final uid = emailToUidMap[email];
-        return {
-          ...getEmail,
-          'Uid': uid ?? 'UID not found',
-        }..remove('email'); // email 필드 제거
-      }).toList();
-    });
-  }
-
-  Future<Map<String, String?>> getUidsByEmails(List<String> emails) async {
-    try {
-      QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection('user')
-          .where('email', whereIn: emails) // 여러 이메일로 쿼리
-          .get();
-
-      final Map<String, String?> emailToUidMap = {};
-      for (var doc in snapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
-        final email = data['email'] as String?;
-        if (email != null) {
-          emailToUidMap[email] = doc.id;
-        }
-      }
-
-      return emailToUidMap;
-    } catch (e) {
-      // print("Error fetching UIDs by emails: $e");
-      return {};
-    }
   }
 
   String meetingName = ''; // 모임 이름
@@ -170,33 +126,41 @@ class _AddGroupList extends State<AddGroupList> {
               ),
             ),
             const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                if (selectedProfiles.isEmpty)
-                  const SizedBox(height: 68) // 기본 공간 유지
-                else
-                  ...selectedProfiles.map((friend) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                      child: Column(
-                        children: [
-                          const CircleAvatar(
-                            radius: 30,
-                            backgroundColor: Colors.grey,
-                            backgroundImage: NetworkImage(
-                                'https://via.placeholder.com/150'), // 프로필 이미지 URL 아이콘으로 교체 가능
+            Container(
+              alignment: Alignment.centerLeft,
+              height: 100, // Row가 차지할 높이를 명시적으로 지정
+              child: SingleChildScrollView(
+                // Avatar가 가로 Overflow 발생하는 거 막기 위함.
+                scrollDirection: Axis.horizontal, // 가로 방향 스크롤 활성화
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    if (selectedProfiles.isEmpty)
+                      const SizedBox(height: 68) // 기본 공간 유지
+                    else
+                      ...selectedProfiles.map((friend) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                          child: Column(
+                            children: [
+                              const CircleAvatar(
+                                radius: 30,
+                                backgroundColor: Colors.grey,
+                                backgroundImage: NetworkImage(
+                                    'https://via.placeholder.com/150'), // 프로필 이미지 URL 아이콘으로 교체 가능
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                friend['name']!,
+                                style: const TextStyle(fontSize: 14.0),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            friend['name']!,
-                            style: const TextStyle(fontSize: 14.0),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-              ],
+                        );
+                      }),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 20),
             Expanded(
@@ -257,6 +221,7 @@ class _AddGroupList extends State<AddGroupList> {
                         final DocumentReference docRef =
                             await firestore.collection('group').add({
                           'date': FieldValue.serverTimestamp(), // 생성 시간 필드 추가
+                          'isCompleted': isCompeleted,
                           'meetingName': meetingName,
                           'schedule': [],
                           'members': [
