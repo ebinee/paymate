@@ -270,12 +270,12 @@ if (groupuser.isNotEmpty)
         decoration: BoxDecoration(
           color: (scheduleItem['schedule_user'] ?? [])
               .any((friend) => friend['Uid'] == _user?.uid) 
-          ?const Color(0x00ffb2a5).withOpacity(0.2)
+          ?const Color(0xFFFFB2A5).withOpacity(0.2)
           : Colors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withOpacity(0.2),
               spreadRadius: 1,
               blurRadius: 3,
               offset: const Offset(0, 3),
@@ -350,7 +350,7 @@ if (groupuser.isNotEmpty)
               textAlign: TextAlign.right,
               style: const TextStyle(
                 fontSize: 16,
-                fontWeight: FontWeight.bold,
+//                fontWeight: FontWeight.bold,
                 color: Color(0xFF646464),
               ),
             ),
@@ -400,7 +400,7 @@ if (groupuser.isNotEmpty)
                 });
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: (isCompeleted ?? false) ? Colors.grey[600] : const Color(0xFFFFB2A5).withOpacity(0.3), // 상태에 따라 색 변경
+                backgroundColor: (isCompeleted ?? false) ? Colors.grey[600] : const Color(0xFFFFB2A5).withOpacity(0.2), // 상태에 따라 색 변경
                 shadowColor: Colors.transparent,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20), 
