@@ -41,14 +41,15 @@ class _Appstate extends State<App> {
     Map<int, int> monthlyExpense = {};
 
     try {
-      // Firestore에서 expense 컬렉션 데이터 가져오기
-      QuerySnapshot<Map<String, dynamic>> snapshot =
-          await FirebaseFirestore.instance.collection('expense').get();
+      // Firestore에서 expense 컬렉션에서 uid 필드가 currentUserUid와 일치하는 문서 가져오기
+      QuerySnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
+          .instance
+          .collection('expense')
+          .where('uid', isEqualTo: user?.uid)
+          .get();
 
       for (var doc in snapshot.docs) {
         Map<String, dynamic> data = doc.data();
-
-        // print("Document data: $data");
 
         // 'date' 필드를 Timestamp로 처리
         Timestamp timestamp = data['date'];
@@ -157,7 +158,7 @@ class _Appstate extends State<App> {
                       month,
                       style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.black54,
+                          color: Color(0xFF646464),
                           decoration: TextDecoration.none),
                     ),
                   );
@@ -181,7 +182,7 @@ class _Appstate extends State<App> {
                   TextStyle(
                     color: isMaxValue
                         ? const Color(0xFFF97272) // 최대값 막대의 툴팁 텍스트 색상
-                        : Colors.black54, // 나머지 막대의 툴팁 텍스트 색상
+                        : const Color(0xFF646464), // 나머지 막대의 툴팁 텍스트 색상
                     fontWeight: FontWeight.bold, // 텍스트 굵게
                     fontSize: 12,
                     decoration: TextDecoration.none,

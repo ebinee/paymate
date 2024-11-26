@@ -303,66 +303,69 @@ if (groupuser.isNotEmpty)
       return 0;
     });
 
-    return scheduleUsers.map<Widget>((friend) {
-      final name = friend['name'] ?? '';
-            return Container(
-              margin: const EdgeInsets.only(right: 3.0),
-              width: 25,
-              height: 25,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Color(0xFFC1C1C1),
-              ),
-              child: Center(
-                child: Text(
-                  name.isNotEmpty
-                      ? (friend['Uid'] == _user?.uid ? '나' : name[0])
-                      : ' ', 
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.white,
-                    //fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            );
-          }).toList();})(),
-        ),
-            ],
-          ),
-        trailing: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              scheduleItem['Creator']['Uid'] == _user?.uid
-                  ? '나'
-                  : scheduleItem['Creator']['name'],
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF646464),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              '₩ ${scheduleItem['money']}',
-              textAlign: TextAlign.right,
-              style: const TextStyle(
-                fontSize: 16,
-//                fontWeight: FontWeight.bold,
-                color: Color(0xFF646464),
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  ),
-)
-
-                  ]
-                  ),
-                );
+                                      return scheduleUsers
+                                          .map<Widget>((friend) {
+                                        final name = friend['name'] ?? '';
+                                        return Container(
+                                          margin:
+                                              const EdgeInsets.only(right: 3.0),
+                                          width: 30,
+                                          height: 30,
+                                          decoration: const BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Color(0xFFC1C1C1),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              name.isNotEmpty
+                                                  ? (friend['Uid'] == _user?.uid
+                                                      ? '나'
+                                                      : name[0])
+                                                  : ' ',
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.white,
+                                                //fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      }).toList();
+                                    })(),
+                                  ),
+                                ],
+                              ),
+                              trailing: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    scheduleItem['Creator']['Uid'] == _user?.uid
+                                        ? '나'
+                                        : scheduleItem['Creator']['name'],
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF646464),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    '₩ ${scheduleItem['money']}',
+                                    textAlign: TextAlign.right,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF646464),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    ]),
+                  );
                 },
               ),
             )
