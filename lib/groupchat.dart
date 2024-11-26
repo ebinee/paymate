@@ -68,14 +68,14 @@ List<Map<String, dynamic>> groupuser=[];
 List<Map<String, dynamic>> schedule=[];
 User? _user;
 
-bool ? isCompeleted;
+//bool ? isAllCompleted;
 
   @override
   void initState() {
     super.initState();
     fetchGroupUsers(); 
     fetchSchedule();
-    fetchIsCompleted();
+//    fetchIsAllCompleted();
     _user = widget.user;
          
   }
@@ -129,28 +129,24 @@ Future<void> fetchGroupUsers() async {
   });
 }
 
-Future<void> fetchIsCompleted() async {
-  try {
-    String groupId = widget.groupId;
-
-    FirebaseFirestore.instance
-        .collection('group')
-        .doc(groupId)
+/*  Stream<bool> fetchIsAllCompleted() {
+    // Firestore에서 해당 그룹 문서를 실시간으로 구독
+    return FirebaseFirestore.instance
+        .collection('groups')
+        .doc(widget.groupId)
         .snapshots()
-        .listen((groupDoc) {
-      if (groupDoc.exists) {
-        setState(() {
-          isCompeleted = groupDoc.data()?['isCompeleted'] ?? false;
-        });
-      } else {
-        print('Group document not found');
-      }
-    });
-  } catch (e) {
-    print('Error fetching isCompeleted: $e');
-  }
-}
+        .map((groupSnapshot) {
+      if (groupSnapshot.exists) {
+        // 'User' 리스트 가져오기
+        List users = groupSnapshot['User'];
 
+        // 모든 사용자가 완료되었는지 확인
+        return users.every((user) => user['isCompleted'] == true);
+      }
+      return false; // 그룹이 없으면 false
+    });
+  }
+*/
   @override
   Widget build(BuildContext context) {
 
@@ -179,15 +175,18 @@ return Scaffold(
     padding: const EdgeInsets.all(10.0),
     child: Column(
       children: [
-            // 선택된 프로필 표시
-if (groupuser.isNotEmpty)
-  Padding(
-    padding: const EdgeInsets.symmetric(vertical: 10.0),
-//    child:SingleChildScrollView(
-//      scrollDirection:Axis.horizontal,
+const SizedBox(height: 10),
+Container(
+  alignment: Alignment.topLeft, // 부모 컨테이너를 가운데 정렬
+  child: SingleChildScrollView(
+    scrollDirection: Axis.horizontal, // 가로 방향 스크롤 활성화
     child: Row(
+      mainAxisAlignment: MainAxisAlignment.center, // 가로 스크롤에서 아이템들을 가운데 정렬
       children: [
-        ...groupuser
+        if (groupuser.isEmpty)
+          const SizedBox(height: 68) // 기본 공간 유지
+        else
+           ...groupuser
             .where((profile) => profile['Uid'] == _user?.uid) // "나"에 해당하는 프로필 먼저 필터링
             .map((profile) {
           return const Padding(
@@ -253,9 +252,11 @@ if (groupuser.isNotEmpty)
           );
         }),
       ],
-//    ),
+    ),
     )
   ),
+const SizedBox(height: 20),
+
             // 일정 목록 표시
             Expanded(
               child: ListView.builder(
@@ -263,7 +264,7 @@ if (groupuser.isNotEmpty)
                 itemBuilder: (context, index) {
                   final scheduleItem = schedule[index];
                   return Padding(
-                  padding: const EdgeInsets.only(bottom: 20.0),
+                  padding: const EdgeInsets.only(bottom: 10.0),
                   child: Row(
                   children: [
                     // 분홍색 원형 아이콘
@@ -271,7 +272,7 @@ if (groupuser.isNotEmpty)
                       width: 50,
                       height: 50,
                       decoration: BoxDecoration(
-                        color: Color(0xFFFFB2A5).withOpacity(0.8),
+                        color: const Color(0xFFFFB2A5).withOpacity(0.8),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -414,35 +415,98 @@ if (groupuser.isNotEmpty)
   shape: const CircleBorder(),
   child: const Icon(Icons.add),
 ),
-    bottomNavigationBar: schedule.isNotEmpty
-        ? Padding(
-            padding: const EdgeInsets.only(bottom: 16.0, left: 100.0, right: 100.0), // 아래쪽 여백만 조정하고 양옆 여백도 추가
-            child: ElevatedButton(
-              onPressed: () {
-            String groupId = widget.groupId;
-            FirebaseFirestore.instance.collection('group').doc(groupId).update({
-              'isCompeleted': !(isCompeleted ?? false), // 현재 상태 반전
-                });
+bottomNavigationBar: schedule.isNotEmpty
+    ? Padding(
+        padding: const EdgeInsets.only(bottom: 16.0, left: 100.0, right: 100.0), // 아래쪽 여백만 조정하고 양옆 여백도 추가
+        child: FutureBuilder<DocumentSnapshot>(
+          future: FirebaseFirestore.instance.collection('group').doc(widget.groupId).get(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator()); // 데이터 로딩 중일 때 표시
+            }
+
+            if (snapshot.hasError) {
+              return Center(child: Text('오류가 발생했습니다.'));
+            }
+
+            // User 데이터 가져오기
+            List users = snapshot.data!['members']??[];
+
+            // isCompleted 상태에 따라 버튼 텍스트 및 색상 결정
+            bool allCompleted = true;
+            bool anyCompleted = false;
+
+            for (var user in users) {
+              if (user['isCompleted'] == false) {
+                allCompleted = false;
+              } else {
+                anyCompleted = true;
+              }
+            }
+
+            String buttonText ;//= '정산완료하기';
+            Color buttonColor ;//= const Color(0xFFFFB2A5).withOpacity(0.2);
+            Color textColor ;//= Colors.grey[600]!;
+
+            if (allCompleted) {
+              buttonText = '정산 완료';
+              buttonColor = Colors.grey[600]!;
+              textColor = Colors.white;
+            } else if (anyCompleted) {
+              buttonText = '정산 진행 중';
+              buttonColor = Colors.grey.withOpacity(0.2);
+              textColor = Colors.grey[600]!;
+            }
+            else{
+              buttonText = '정산 시작하기';
+              buttonColor = Color(0xFFFFB2A5) .withOpacity(0.6);
+              textColor = Colors.grey[600]!;
+            }
+
+            return ElevatedButton(
+              onPressed: () async {
+                String userId = _user?.uid ?? ''; // 현재 사용자의 UID를 가져옵니다.
+                if (userId.isNotEmpty) {
+                  // 버튼 클릭 시 isCompleted 상태 반전
+                  FirebaseFirestore.instance.collection('group').doc(widget.groupId).get().then((groupDoc) async {
+                    List users = groupDoc['members'];
+
+                    for (var i = 0; i < users.length; i++) {
+                      if (users[i]['Uid'] == userId) {
+                        bool currentStatus = users[i]['isCompleted'] == true;
+                        users[i]['isCompleted'] = currentStatus ? false : true;
+                        await FirebaseFirestore.instance.collection('group').doc(widget.groupId).update({
+                          'members': users, // 수정된 배열로 업데이트
+                        });
+                        break;
+                      }
+                    }
+                  });
+                }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: (isCompeleted ?? false) ? Colors.grey[600] : const Color(0xFFFFB2A5).withOpacity(0.2), // 상태에 따라 색 변경
+                backgroundColor: buttonColor, // 상태에 따른 색상
                 shadowColor: Colors.transparent,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20), 
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               child: Text(
-                (isCompeleted ?? false) ? '정산 완료' : '정산완료하기', // 상태에 따라 텍스트 변경
+                buttonText, // 상태에 따른 텍스트
                 style: TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: (isCompeleted ?? false) ?  Colors.white : Colors.grey[600] ,
+//                 fontWeight: FontWeight.bold,
+                  color: textColor, // 상태에 따른 텍스트 색상
                 ),
               ),
-            ),
-          )
-        : null, // schedule이 비어있으면 버튼을 표시하지 않음
-  );
-}
+            );
+          },
+        ),
+      )
+    : null, // schedule이 비어있으면 버튼을 표시하지 않음
+);
+
+
+  }
   }

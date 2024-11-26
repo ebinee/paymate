@@ -19,7 +19,7 @@ class _AddGroupList extends State<AddGroupList> {
   List<Map<String, dynamic>> friends = []; // login 사용자의 친구 리스트
   String userName = '';
   String userUid = '';
-  bool isCompeleted = false;
+  bool isAllCompeleted = false;
   User? _user;
 
   @override
@@ -215,23 +215,30 @@ class _AddGroupList extends State<AddGroupList> {
               onPressed: _isCreateButtonEnabled()
                   ? () async {
                       try {
+                        
                         // Firestore 인스턴스 가져오기
                         final firestore = FirebaseFirestore.instance;
+                        List<Map<String, dynamic>> updatedMembers = [
+  {
+    'Uid': _user?.uid,
+    'name': userName,
+    'isCompleted': false,  // 새로운 필드 추가
+  },
+] + selectedProfiles.map((profile) {
+  // selectedProfiles의 각 항목에 'isCompleted' 필드 추가
+  return {
+    ...profile,  // 기존 profile 데이터
+    'isCompleted': false,  // 새로운 필드 추가
+  };
+}).toList();
                         // 'group' 컬렉션에 새 문서 생성 및 데이터 저장
                         final DocumentReference docRef =
                             await firestore.collection('group').add({
                           'date': FieldValue.serverTimestamp(), // 생성 시간 필드 추가
-                          'isCompleted': isCompeleted,
+                          'isAllCompleted': isAllCompeleted,
                           'meetingName': meetingName,
                           'schedule': [],
-                          'members': [
-                                {
-                                  'Uid': _user?.uid,
-                                  'name': userName,
-                                } as Map<String, dynamic>
-                              ] +
-                              selectedProfiles,
-                        });
+                          'members': updatedMembers,});
                         final String groupId = docRef.id; // 새로 생성된 문서 ID 가져오기
 
                         // 성공 시 화면 전환
