@@ -103,6 +103,7 @@ class FinancialLedgerState extends State<FinancialLedger> {
       appBar: const Header(
         headerTitle: 'MY 가계부',
       ),
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(
