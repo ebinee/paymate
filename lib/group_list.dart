@@ -60,9 +60,18 @@ class GroupListState extends State<GroupList> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
+    /*
+    List<Map<String, dynamic>> sortedGroups = List.from(groups);
+    sortedGroups.sort((a, b) {
+      bool aCompleted = a['data']['isAllCompleted'] ?? false;
+      bool bCompleted = b['data']['isAllCompleted'] ?? false;
+      int aValue = aCompleted ? 1 : 0;
+      int bValue = bCompleted ? 1 : 0;
+      return aValue - bValue;
+    });*/
+
     return Scaffold(
       appBar: const Header(headerTitle: '모임 목록'),
       backgroundColor: Colors.white,
@@ -101,6 +110,8 @@ class GroupListState extends State<GroupList> {
                 primary: false,
                 itemCount: groups.length,
                 itemBuilder: (context, index) {
+                  // bool isAllCompleted =
+                  //    groups[index]['data']['isAllCompleted'] ?? false;
                   return GestureDetector(
                     onTap: () {},
                     child: GroupCard(
@@ -124,6 +135,9 @@ class GroupListState extends State<GroupList> {
                           : <String>[],
                       groupId: groups[index]['id'],
                       user: _user,
+                      backgroundColor: (groups[index]['data']['isAllCompleted'])
+                          ? Colors.grey[300]
+                          : const Color(0xFFFFB2A5).withOpacity(0.2),
                     ),
                   );
                 },
@@ -148,7 +162,7 @@ class GroupCard extends StatelessWidget {
     required this.date,
     required this.friends,
     required this.groupId,
-    this.backgroundColor,
+    required this.backgroundColor,
     required this.user,
   });
 
