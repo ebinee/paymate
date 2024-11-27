@@ -29,31 +29,28 @@ class App extends StatefulWidget {
 
 class _Appstate extends State<App> {
   User? user = FirebaseAuth.instance.currentUser;
-  Future<Map<int, int>>? _monthlyExpense;
+  // Future<Map<int, int>>? _monthlyExpense;
 
+  /*
   @override
   void initState() {
     super.initState();
     _monthlyExpense = fetchMonthlyExpense(); // Firebase 데이터 가져오기
   }
-
-  Future<Map<int, int>> fetchMonthlyExpense() async {
-    Map<int, int> monthlyExpense = {};
-
-    try {
-      // Firestore에서 expense 컬렉션에서 uid 필드가 currentUserUid와 일치하는 문서 가져오기
-      QuerySnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
-          .instance
-          .collection('expense')
-          .where('uid', isEqualTo: user?.uid)
-          .get();
-
+  */
+  Stream<Map<int, int>> fetchMonthlyExpenseStream() {
+    return FirebaseFirestore.instance
+        .collection('expense')
+        .where('uid', isEqualTo: user?.uid)
+        .snapshots()
+        .map((snapshot) {
+      Map<int, int> monthlyExpense = {};
       for (var doc in snapshot.docs) {
         Map<String, dynamic> data = doc.data();
 
         // 'date' 필드를 Timestamp로 처리
         Timestamp timestamp = data['date'];
-        DateTime dateTime = timestamp.toDate();
+        DateTime dateTime = timestamp.toDate().toLocal();
         int month = dateTime.month;
 
         // 'money' 필드 처리
@@ -66,11 +63,8 @@ class _Appstate extends State<App> {
           monthlyExpense[month] = money;
         }
       }
-    } catch (e) {
-      print("Error fetching data: $e");
-    }
-
-    return monthlyExpense;
+      return monthlyExpense;
+    });
   }
 
   Widget buildBarChart(Map<int, int> monthlyExpense) {
@@ -173,8 +167,9 @@ class _Appstate extends State<App> {
                   FLHorizontalAlignment.center, // 툴팁을 막대 중앙에 정렬
               getTooltipColor: (group) => Colors.transparent, // 툴팁 배경색 설정
               getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                final maxExpense =
-                    monthlyExpense.values.reduce((a, b) => a > b ? a : b);
+                final maxExpense = monthlyExpense.isNotEmpty
+                    ? monthlyExpense.values.reduce((a, b) => a > b ? a : b)
+                    : 0;
                 final isMaxValue = rod.toY == maxExpense.toDouble();
 
                 return BarTooltipItem(
@@ -440,8 +435,9 @@ class _Appstate extends State<App> {
             ),
             // const SizedBox(height: 5),
             // 차트 추가
-            FutureBuilder<Map<int, int>>(
-              future: _monthlyExpense, // Firebase에서 데이터를 가져오는 Future
+            StreamBuilder<Map<int, int>>(
+              stream:
+                  fetchMonthlyExpenseStream(), // Firebase에서 데이터를 가져오는 Future
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
