@@ -215,22 +215,22 @@ class _AddGroupList extends State<AddGroupList> {
               onPressed: _isCreateButtonEnabled()
                   ? () async {
                       try {
-                        
                         // Firestore 인스턴스 가져오기
                         final firestore = FirebaseFirestore.instance;
                         List<Map<String, dynamic>> updatedMembers = [
-  {
-    'Uid': _user?.uid,
-    'name': userName,
-    'isCompleted': false,  // 새로운 필드 추가
-  },
-] + selectedProfiles.map((profile) {
-  // selectedProfiles의 각 항목에 'isCompleted' 필드 추가
-  return {
-    ...profile,  // 기존 profile 데이터
-    'isCompleted': false,  // 새로운 필드 추가
-  };
-}).toList();
+                              {
+                                'Uid': _user?.uid,
+                                'name': userName,
+                                'isCompleted': false, // 새로운 필드 추가
+                              },
+                            ] +
+                            selectedProfiles.map((profile) {
+                              // selectedProfiles의 각 항목에 'isCompleted' 필드 추가
+                              return {
+                                ...profile, // 기존 profile 데이터
+                                'isCompleted': false, // 새로운 필드 추가
+                              };
+                            }).toList();
                         // 'group' 컬렉션에 새 문서 생성 및 데이터 저장
                         final DocumentReference docRef =
                             await firestore.collection('group').add({
@@ -238,7 +238,8 @@ class _AddGroupList extends State<AddGroupList> {
                           'isAllCompleted': isAllCompeleted,
                           'meetingName': meetingName,
                           'schedule': [],
-                          'members': updatedMembers,});
+                          'members': updatedMembers,
+                        });
                         final String groupId = docRef.id; // 새로 생성된 문서 ID 가져오기
 
                         // 성공 시 화면 전환
@@ -249,7 +250,7 @@ class _AddGroupList extends State<AddGroupList> {
                               builder: (context) => GroupChat(
                                 meetingName: meetingName,
                                 groupId: groupId,
-                                user:_user,
+                                user: _user,
                               ),
                             ),
                           );

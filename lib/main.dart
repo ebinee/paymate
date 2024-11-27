@@ -97,15 +97,18 @@ class _Appstate extends State<App> {
         BarChartData(
           alignment: BarChartAlignment.spaceEvenly,
           maxY: (() {
-            final maxExpense =
-                monthlyExpense.values.reduce((a, b) => a > b ? a : b);
+            final maxExpense = monthlyExpense.isNotEmpty
+                ? monthlyExpense.values.reduce((a, b) => a > b ? a : b)
+                : 0;
             return maxExpense.toDouble() + (maxExpense / 4).toDouble();
           })(),
           gridData: const FlGridData(show: false),
           borderData: FlBorderData(show: false),
           barGroups: (() {
-            final maxExpense =
-                monthlyExpense.values.reduce((a, b) => a > b ? a : b);
+            final maxExpense = monthlyExpense.isNotEmpty
+                ? monthlyExpense.values.reduce((a, b) => a > b ? a : b)
+                : 0;
+
             return [6, 7, 8, 9, 10, 11].map((month) {
               final double value = monthlyExpense[month]?.toDouble() ?? 0.0;
               return BarChartGroupData(
